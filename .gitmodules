@@ -1,0 +1,9 @@
+[submodule "thirdparty/starpu"]
+	path = thirdparty/starpu
+	url = https://github.com/alucas/StarPU.git
+[submodule "thirdparty/superglue"]
+	path = thirdparty/superglue
+	url = https://github.com/tillenius/superglue.git
+[submodule "thirdparty/redGrapes"]
+	path = thirdparty/redGrapes
+	url = https://github.com/michaelsippel/redGrapes
