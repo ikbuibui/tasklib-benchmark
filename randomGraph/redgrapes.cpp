@@ -1,8 +1,7 @@
 #include <chrono>
 #include <redGrapes/redGrapes.hpp>
 #include <redGrapes/resource/ioresource.hpp>
-
-#define RESOURCES_PER_TASK 0
+#include "common.h"
 
 namespace rg = redGrapes;
 using namespace std::chrono;
@@ -15,9 +14,7 @@ void sleep( nanoseconds d )
 
 int main(int argc, char* argv[])
 {
-    unsigned n_resources = 5;
-    unsigned n_tasks = 1000;
-    unsigned n_threads = 4;
+    read_args(argc, argv);
 
     rg::init( n_threads );
 
@@ -27,36 +24,36 @@ int main(int argc, char* argv[])
     for( int i = 0; i < n_tasks; ++i )
         rg::emplace_task(
             [](
-#if RESOURCES_PER_TASK >= 1
+#if DEPENDENCIES_PER_TASK >= 1
                auto ra1
 #endif
-#if RESOURCES_PER_TASK >= 2
+#if DEPENDENCIES_PER_TASK >= 2
                , auto ra2
 #endif
-#if RESOURCES_PER_TASK >= 4
+#if DEPENDENCIES_PER_TASK >= 4
                , auto ra3
                , auto ra4
 #endif
-#if RESOURCES_PER_TASK >= 8
+#if DEPENDENCIES_PER_TASK >= 8
                , auto ra5
                , auto ra6
                , auto ra7
                , auto ra8
 #endif
             ) {
-                sleep( nanoseconds(10000) );
+                sleep( task_duration );
             }
-#if RESOURCES_PER_TASK >= 1
+#if DEPENDENCIES_PER_TASK >= 1
             , resources[ rand()%n_resources ].write()
 #endif
-#if RESOURCES_PER_TASK >= 2
+#if DEPENDENCIES_PER_TASK >= 2
             , resources[ rand()%n_resources ].write()
 #endif
-#if RESOURCES_PER_TASK >= 4
+#if DEPENDENCIES_PER_TASK >= 4
             , resources[ rand()%n_resources ].write()
             , resources[ rand()%n_resources ].write()
 #endif
-#if RESOURCES_PER_TASK >= 8
+#if DEPENDENCIES_PER_TASK >= 8
             , resources[ rand()%n_resources ].write()
             , resources[ rand()%n_resources ].write()
             , resources[ rand()%n_resources ].write()
