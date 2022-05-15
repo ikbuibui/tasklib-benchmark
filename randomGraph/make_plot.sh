@@ -1,11 +1,12 @@
 #!/bin/sh
 
-n_resources=4
-n_dependencies_per_task=0
+n_resources=10
+min_dependencies=0
+max_dependencies=4
 n_threads=4
 task_duration=1
 
-n_repeat=1
+n_repeat=5
 
 mkdir build
 cd build
@@ -16,16 +17,16 @@ cd ..
 for lib in redgrapes superglue quark;
 do
     truncate -s 0 ${lib}_data
-    for n_tasks in 1500 3000 10000;
+    for n_tasks in 1500 3000 7000 10000;
     do
 	DATA=""
 
 	for i in $(seq $n_repeat);
 	do
-	    echo $lib $n_tasks $n_resources $task_duration $n_threads
-	    TOTAL=$(numactl -C 1-$n_threads ./build/$lib $n_tasks $n_resources $task_duration $n_threads | grep -Po '\K[0-9]*')
+	    echo $lib $n_tasks $n_resources $min_dependencies $max_dependencies $task_duration $n_threads $i
+	    TOTAL=$(numactl -C 1-$n_threads ./build/$lib $n_tasks $n_resources $min_dependencies $max_dependencies $task_duration $n_threads $i | grep -Po '\K[0-9]*')
 	    IDEAL=$(bc -l <<< "($task_duration * $n_tasks) / $n_threads")
-	    DIFF=$(bc -l <<< "($TOTAL /1000) - $IDEAL")
+	    DIFF=$(bc -l <<< "($TOTAL/1000) - $IDEAL")
 
 	    DATA="$DIFF $DATA"
 	done
@@ -41,7 +42,7 @@ do
 done
 
 gnuplot -p \
-   -e "set title \"$n_tasks tasks, $n_resources resources, $n_dependencies_per_task dependencies per task, $task_duration μs task duration, $n_threads threads\"" \
+   -e "set title \"$n_resources resources, dependencies per task: $min_dependencies - $max_dependencies, $task_duration μs task duration, $n_threads threads\"" \
    -e 'set xlabel "number of tasks"' \
    -e 'set ylabel "runtime overhead (μs)"' \
    -e 'set key right bottom' \
