@@ -63,6 +63,7 @@ void generate_access_pattern()
     std::uniform_int_distribution<unsigned> distrib_resource(0, n_resources - 1);
 
     expected_hash = std::vector<uint64_t>(n_resources);
+    std::vector<unsigned> path_length(n_resources);
 
     for(int i = 0; i < n_tasks; ++i)
     {
@@ -70,6 +71,8 @@ void generate_access_pattern()
         unsigned n_dependencies = distrib_n_deps(gen);
         for(int j = 0; j < n_dependencies; ++j)
         {
+	    unsigned max_path_length = 0;
+
             while(1)
             {
                 unsigned resource_id = distrib_resource(gen);
@@ -78,9 +81,24 @@ void generate_access_pattern()
                 {
                     access_pattern[i].push_back(resource_id);
                     expected_hash[resource_id] = hash(expected_hash[resource_id] + i);
+
+		    if( path_length[resource_id] > max_path_length )
+		      max_path_length = path_length[resource_id];
+
                     break;
                 }
             }
+
+	    for( unsigned rid : access_pattern[i] )
+	      path_length[rid] = max_path_length + 1;
         }
     }
+
+    unsigned max_path_length = 1;
+    for( unsigned pl : path_length )
+      if( pl > max_path_length )
+	max_path_length = pl + 1;
+
+    std::cout << "max path length = " << max_path_length << std::endl;
 }
+
