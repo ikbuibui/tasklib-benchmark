@@ -1,10 +1,10 @@
 #!/bin/sh
 
 n_resources=20
-min_dependencies=1
+min_dependencies=0
 max_dependencies=4
-n_threads=8
-task_duration=1
+n_threads=4
+task_duration=25
 
 n_repeat=10
 

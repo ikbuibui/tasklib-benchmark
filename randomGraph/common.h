@@ -34,7 +34,7 @@ void read_args(int argc, char* argv[])
     if(argc > 4)
         max_dependencies = atoi(argv[4]);
     if(argc > 5)
-        task_duration = std::chrono::microseconds(atoi(argv[5]) * 1000);
+        task_duration = std::chrono::microseconds(atoi(argv[5]));
     if(argc > 6)
         n_threads = atoi(argv[6]);
     if(argc > 7)
