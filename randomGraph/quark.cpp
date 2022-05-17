@@ -122,6 +122,7 @@ int main(int argc, char* argv[])
                               sizeof(uint64_t), &resources[ access_pattern[i][0] ], INOUT,
                               sizeof(uint64_t), &resources[ access_pattern[i][1] ], INOUT,
                               sizeof(uint64_t), &resources[ access_pattern[i][2] ], INOUT,
+                              sizeof(uint64_t), &resources[ access_pattern[i][3] ], INOUT,
                               sizeof(uint64_t), &resources[ access_pattern[i][4] ], INOUT,
                               0);
             break;
