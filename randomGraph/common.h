@@ -97,7 +97,7 @@ void generate_access_pattern()
     unsigned max_path_length = 1;
     for( unsigned pl : path_length )
       if( pl > max_path_length )
-	max_path_length = pl + 1;
+	max_path_length = pl;
 
     std::cout << "max path length = " << max_path_length << std::endl;
 }
