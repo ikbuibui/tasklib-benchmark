@@ -3,7 +3,9 @@
 #include <random>
 #include <iostream>
 #include <vector>
+#include <array>
 #include <algorithm>
+#include "sha256.c"
 
 std::chrono::microseconds task_duration;
 unsigned n_resources = 5;
@@ -14,7 +16,7 @@ unsigned max_dependencies = 0;
 std::mt19937 gen;
 
 std::vector<std::vector<unsigned>> access_pattern;
-std::vector<uint64_t> expected_hash;
+std::vector<std::array<uint32_t, 8>> expected_hash;
 
 void read_args(int argc, char* argv[])
 {
@@ -52,9 +54,20 @@ void sleep(std::chrono::microseconds d)
         ;
 }
 
-uint64_t hash(uint64_t x)
+void hash(unsigned task_id,
+          std::array<uint32_t, 8> & val)
 {
-    return (x << 2) + x % 4;
+    val[0] += task_id;
+
+    uint32_t state[8] = {
+        0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
+        0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19
+    };
+
+    sha256_process((uint32_t*)&state, (uint8_t*) (uint8_t*)&val[0], 32);
+
+    for(int i=0; i<8; ++i)
+        val[i] = state[i];
 }
 
 void generate_access_pattern()
@@ -62,7 +75,7 @@ void generate_access_pattern()
     std::uniform_int_distribution<unsigned> distrib_n_deps(min_dependencies, max_dependencies);
     std::uniform_int_distribution<unsigned> distrib_resource(0, n_resources - 1);
 
-    expected_hash = std::vector<uint64_t>(n_resources);
+    expected_hash = std::vector<std::array<uint32_t, 8>>(n_resources);
     std::vector<unsigned> path_length(n_resources);
 
     for(int i = 0; i < n_tasks; ++i)
@@ -80,7 +93,7 @@ void generate_access_pattern()
                    == access_pattern[i].end())
                 {
                     access_pattern[i].push_back(resource_id);
-                    expected_hash[resource_id] = hash(expected_hash[resource_id] + i);
+                    hash(i, expected_hash[resource_id]);
 
 		    if( path_length[resource_id] > max_path_length )
 		      max_path_length = path_length[resource_id];

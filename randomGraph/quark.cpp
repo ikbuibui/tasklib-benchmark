@@ -16,57 +16,57 @@ void myTask0(Quark * quark)
 void myTask1(Quark * quark)
 {
     unsigned task_id;
-    uint64_t *data1;
+    std::array<uint32_t, 8> *data1;
     quark_unpack_args_2( quark, task_id, data1 );
 
     sleep( task_duration );
-    *data1 = hash(*data1 + task_id);
+    hash(task_id, *data1);
 }
 void myTask2(Quark * quark)
 {
     unsigned task_id;
-    uint64_t *data1, *data2;
+    std::array<uint32_t, 8> *data1, *data2;
     quark_unpack_args_3( quark, task_id, data1, data2 );
 
     sleep( task_duration );
-    *data1 = hash(*data1 + task_id);
-    *data2 = hash(*data2 + task_id);
+    hash(task_id, *data1);
+    hash(task_id, *data2);
 }
 void myTask3(Quark * quark)
 {
     unsigned task_id;
-    uint64_t *data1, *data2, *data3;
+    std::array<uint32_t, 8> *data1, *data2, *data3;
     quark_unpack_args_4( quark, task_id, data1, data2, data3 );
 
     sleep( task_duration );
-    *data1 = hash(*data1 + task_id);
-    *data2 = hash(*data2 + task_id);
-    *data3 = hash(*data3 + task_id);
+    hash(task_id, *data1);
+    hash(task_id, *data2);
+    hash(task_id, *data3);
 }
 void myTask4(Quark * quark)
 {
     unsigned task_id;
-    uint64_t *data1, *data2, *data3, *data4;
+    std::array<uint32_t, 8> *data1, *data2, *data3, *data4;
     quark_unpack_args_5( quark, task_id, data1, data2, data3, data4 );
 
     sleep( task_duration );
-    *data1 = hash(*data1 + task_id);
-    *data2 = hash(*data2 + task_id);
-    *data3 = hash(*data3 + task_id);
-    *data4 = hash(*data4 + task_id);
+    hash(task_id, *data1);
+    hash(task_id, *data2);
+    hash(task_id, *data3);
+    hash(task_id, *data4);
 }
 void myTask5(Quark * quark)
 {
     unsigned task_id;
-    uint64_t *data1, *data2, *data3, *data4, *data5;
+    std::array<uint32_t, 8> *data1, *data2, *data3, *data4, *data5;
     quark_unpack_args_6( quark, task_id, data1, data2, data3, data4, data5 );
 
     sleep( task_duration );
-    *data1 = hash(*data1 + task_id);
-    *data2 = hash(*data2 + task_id);
-    *data3 = hash(*data3 + task_id);
-    *data4 = hash(*data4 + task_id);
-    *data5 = hash(*data5 + task_id);
+    hash(task_id, *data1);
+    hash(task_id, *data2);
+    hash(task_id, *data3);
+    hash(task_id, *data4);
+    hash(task_id, *data5);
 }
 
 int main(int argc, char* argv[])
@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
 
     Quark * quark = QUARK_New(n_threads);
 
-    std::vector< uint64_t > resources(n_resources);
+    std::vector< std::array<uint32_t, 8> > resources(n_resources);
 
     auto start = high_resolution_clock::now();
 
@@ -89,41 +89,41 @@ int main(int argc, char* argv[])
         case 1:
             QUARK_Insert_Task(quark, myTask1, NULL,
                               sizeof(unsigned), &i, VALUE,
-                              sizeof(uint64_t), &resources[ access_pattern[i][0] ], INOUT,
+                              sizeof(std::array<uint32_t,8>), &resources[ access_pattern[i][0] ], INOUT,
                               0);
             break;
         case 2:
             QUARK_Insert_Task(quark, myTask2, NULL,
                               sizeof(unsigned), &i, VALUE,
-                              sizeof(uint64_t), &resources[ access_pattern[i][0] ], INOUT,
-                              sizeof(uint64_t), &resources[ access_pattern[i][1] ], INOUT,
+                              sizeof(std::array<uint32_t, 8>), &resources[ access_pattern[i][0] ], INOUT,
+                              sizeof(std::array<uint32_t, 8>), &resources[ access_pattern[i][1] ], INOUT,
                               0);
             break;
         case 3:
             QUARK_Insert_Task(quark, myTask3, NULL,
                               sizeof(unsigned), &i, VALUE,
-                              sizeof(uint64_t), &resources[ access_pattern[i][0] ], INOUT,
-                              sizeof(uint64_t), &resources[ access_pattern[i][1] ], INOUT,
-                              sizeof(uint64_t), &resources[ access_pattern[i][2] ], INOUT,
+                              sizeof(std::array<uint32_t, 8>), &resources[ access_pattern[i][0] ], INOUT,
+                              sizeof(std::array<uint32_t, 8>), &resources[ access_pattern[i][1] ], INOUT,
+                              sizeof(std::array<uint32_t, 8>), &resources[ access_pattern[i][2] ], INOUT,
                               0);
             break;
         case 4:
             QUARK_Insert_Task(quark, myTask4, NULL,
                               sizeof(unsigned), &i, VALUE,
-                              sizeof(uint64_t), &resources[ access_pattern[i][0] ], INOUT,
-                              sizeof(uint64_t), &resources[ access_pattern[i][1] ], INOUT,
-                              sizeof(uint64_t), &resources[ access_pattern[i][2] ], INOUT,
-                              sizeof(uint64_t), &resources[ access_pattern[i][3] ], INOUT,
+                              sizeof(std::array<uint32_t, 8>), &resources[ access_pattern[i][0] ], INOUT,
+                              sizeof(std::array<uint32_t, 8>), &resources[ access_pattern[i][1] ], INOUT,
+                              sizeof(std::array<uint32_t, 8>), &resources[ access_pattern[i][2] ], INOUT,
+                              sizeof(std::array<uint32_t, 8>), &resources[ access_pattern[i][3] ], INOUT,
                               0);
             break;
         case 5:
             QUARK_Insert_Task(quark, myTask5, NULL,
                               sizeof(unsigned), &i, VALUE,
-                              sizeof(uint64_t), &resources[ access_pattern[i][0] ], INOUT,
-                              sizeof(uint64_t), &resources[ access_pattern[i][1] ], INOUT,
-                              sizeof(uint64_t), &resources[ access_pattern[i][2] ], INOUT,
-                              sizeof(uint64_t), &resources[ access_pattern[i][3] ], INOUT,
-                              sizeof(uint64_t), &resources[ access_pattern[i][4] ], INOUT,
+                              sizeof(std::array<uint32_t, 8>), &resources[ access_pattern[i][0] ], INOUT,
+                              sizeof(std::array<uint32_t, 8>), &resources[ access_pattern[i][1] ], INOUT,
+                              sizeof(std::array<uint32_t, 8>), &resources[ access_pattern[i][2] ], INOUT,
+                              sizeof(std::array<uint32_t, 8>), &resources[ access_pattern[i][3] ], INOUT,
+                              sizeof(std::array<uint32_t, 8>), &resources[ access_pattern[i][4] ], INOUT,
                               0);
             break;
         }

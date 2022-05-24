@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
 
     rg::init(n_threads);
 
-    std::vector<rg::IOResource<uint64_t>> resources(n_resources);
+    std::vector<rg::IOResource<std::array<uint32_t, 8>>> resources(n_resources);
 
     auto start = high_resolution_clock::now();
 
@@ -29,8 +29,12 @@ int main(int argc, char* argv[])
             rg::emplace_task(
                 [i](auto ra1)
                 {
+                    auto start = high_resolution_clock::now();
+
                     sleep(task_duration);
-                    *ra1 = hash(*ra1 + i);
+                    hash(i, *ra1);
+
+                    auto end = high_resolution_clock::now();
                 },
                 resources[access_pattern[i][0]].write());
             break;
@@ -40,8 +44,8 @@ int main(int argc, char* argv[])
                 [i](auto ra1, auto ra2)
                 {
                     sleep(task_duration);
-                    *ra1 = hash(*ra1 + i);
-                    *ra2 = hash(*ra2 + i);
+                    hash(i, *ra1);
+                    hash(i, *ra2);
                 },
                 resources[access_pattern[i][0]].write(),
                 resources[access_pattern[i][1]].write());
@@ -52,9 +56,9 @@ int main(int argc, char* argv[])
                 [i](auto ra1, auto ra2, auto ra3)
                 {
                     sleep(task_duration);
-                    *ra1 = hash(*ra1 + i);
-                    *ra2 = hash(*ra2 + i);
-                    *ra3 = hash(*ra3 + i);
+                    hash(i, *ra1);
+                    hash(i, *ra2);
+                    hash(i, *ra3);
                 },
                 resources[access_pattern[i][0]].write(),
                 resources[access_pattern[i][1]].write(),
@@ -66,10 +70,10 @@ int main(int argc, char* argv[])
                 [i](auto ra1, auto ra2, auto ra3, auto ra4)
                 {
                     sleep(task_duration);
-                    *ra1 = hash(*ra1 + i);
-                    *ra2 = hash(*ra2 + i);
-                    *ra3 = hash(*ra3 + i);
-                    *ra4 = hash(*ra4 + i);
+                    hash(i, *ra1);
+                    hash(i, *ra2);
+                    hash(i, *ra3);
+                    hash(i, *ra4);
                 },
                 resources[access_pattern[i][0]].write(),
                 resources[access_pattern[i][1]].write(),
@@ -82,11 +86,12 @@ int main(int argc, char* argv[])
                 [i](auto ra1, auto ra2, auto ra3, auto ra4, auto ra5)
                 {
                     sleep(task_duration);
-                    *ra1 = hash(*ra1 + i);
-                    *ra2 = hash(*ra2 + i);
-                    *ra3 = hash(*ra3 + i);
-                    *ra4 = hash(*ra4 + i);
-                    *ra5 = hash(*ra5 + i);
+
+                    hash(i, *ra1);
+                    hash(i, *ra2);
+                    hash(i, *ra3);
+                    hash(i, *ra4);
+                    hash(i, *ra5);
                 },
                 resources[access_pattern[i][0]].write(),
                 resources[access_pattern[i][1]].write(),
