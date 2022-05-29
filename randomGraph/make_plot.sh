@@ -44,8 +44,10 @@ do
     done
 done
 
+OUTPUT="bench_res${n_resources}_dep${min_dependencies}_${max_dependencies}_dur${task_duration}_thr${n_workers}.png"
+
 gnuplot -p \
-   -e "set output \"bench_res${n_resources}_dep${min_dependencies}_${max_dependencies}_dur${task_duration}_thr${n_workers}.png\"" \
+   -e "set output \"${OUTPUT}\"" \
    -e 'set terminal png size 800,600 enhanced font "Computer Modern,16"' \
    -e "set title \"$n_resources resources,\n$min_dependencies - $max_dependencies dependencies per task,\n $task_duration μs task duration,\n $n_workers threads\"" \
    -e 'set xlabel "number of tasks"' \
