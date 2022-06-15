@@ -24,9 +24,9 @@ struct MyTask0 : Task<Options, 0> {
 
 struct MyTask1 : Task<Options, 1> {
     unsigned task_id;
-    std::array<uint32_t, 8> & data1;
+    std::array<uint64_t, 8> & data1;
 
-    MyTask1(unsigned task_id, Handle<Options> & h1, std::array<uint32_t, 8> & data1)
+    MyTask1(unsigned task_id, Handle<Options> & h1, std::array<uint64_t, 8> & data1)
         : task_id(task_id)
         , data1(data1)
     {
@@ -42,12 +42,12 @@ struct MyTask1 : Task<Options, 1> {
 
 struct MyTask2 : Task<Options, 2> {
     unsigned task_id;
-    std::array<uint32_t, 8> & data1;
-    std::array<uint32_t, 8> & data2;
+    std::array<uint64_t, 8> & data1;
+    std::array<uint64_t, 8> & data2;
 
     MyTask2(unsigned task_id,
-            Handle<Options> & h1, std::array<uint32_t, 8> & data1,
-            Handle<Options> & h2, std::array<uint32_t, 8> & data2)
+            Handle<Options> & h1, std::array<uint64_t, 8> & data1,
+            Handle<Options> & h2, std::array<uint64_t, 8> & data2)
         : task_id(task_id)
         , data1(data1)
         , data2(data2)
@@ -66,14 +66,14 @@ struct MyTask2 : Task<Options, 2> {
 
 struct MyTask3 : Task<Options, 3> {
     unsigned task_id;
-    std::array<uint32_t, 8> & data1;
-    std::array<uint32_t, 8> & data2;
-    std::array<uint32_t, 8> & data3;
+    std::array<uint64_t, 8> & data1;
+    std::array<uint64_t, 8> & data2;
+    std::array<uint64_t, 8> & data3;
 
     MyTask3(unsigned task_id,
-            Handle<Options> & h1, std::array<uint32_t, 8> & data1,
-            Handle<Options> & h2, std::array<uint32_t, 8> & data2,
-            Handle<Options> & h3, std::array<uint32_t, 8> & data3)
+            Handle<Options> & h1, std::array<uint64_t, 8> & data1,
+            Handle<Options> & h2, std::array<uint64_t, 8> & data2,
+            Handle<Options> & h3, std::array<uint64_t, 8> & data3)
         : task_id(task_id)
         , data1(data1)
         , data2(data2)
@@ -95,16 +95,16 @@ struct MyTask3 : Task<Options, 3> {
 
 struct MyTask4 : Task<Options, 4> {
     unsigned task_id;
-    std::array<uint32_t, 8> & data1;
-    std::array<uint32_t, 8> & data2;
-    std::array<uint32_t, 8> & data3;
-    std::array<uint32_t, 8> & data4;
+    std::array<uint64_t, 8> & data1;
+    std::array<uint64_t, 8> & data2;
+    std::array<uint64_t, 8> & data3;
+    std::array<uint64_t, 8> & data4;
 
     MyTask4(unsigned task_id,
-            Handle<Options> & h1, std::array<uint32_t, 8> & data1,
-            Handle<Options> & h2, std::array<uint32_t, 8> & data2,
-            Handle<Options> & h3, std::array<uint32_t, 8> & data3,
-            Handle<Options> & h4, std::array<uint32_t, 8> & data4
+            Handle<Options> & h1, std::array<uint64_t, 8> & data1,
+            Handle<Options> & h2, std::array<uint64_t, 8> & data2,
+            Handle<Options> & h3, std::array<uint64_t, 8> & data3,
+            Handle<Options> & h4, std::array<uint64_t, 8> & data4
             )
         : task_id(task_id)
         , data1(data1)
@@ -130,18 +130,18 @@ struct MyTask4 : Task<Options, 4> {
 
 struct MyTask5 : Task<Options, 5> {
     unsigned task_id;
-    std::array<uint32_t, 8> & data1;
-    std::array<uint32_t, 8> & data2;
-    std::array<uint32_t, 8> & data3;
-    std::array<uint32_t, 8> & data4;
-    std::array<uint32_t, 8> & data5;
+    std::array<uint64_t, 8> & data1;
+    std::array<uint64_t, 8> & data2;
+    std::array<uint64_t, 8> & data3;
+    std::array<uint64_t, 8> & data4;
+    std::array<uint64_t, 8> & data5;
 
     MyTask5(unsigned task_id,
-            Handle<Options> & h1, std::array<uint32_t, 8> & data1,
-            Handle<Options> & h2, std::array<uint32_t, 8> & data2,
-            Handle<Options> & h3, std::array<uint32_t, 8> & data3,
-            Handle<Options> & h4, std::array<uint32_t, 8> & data4,
-            Handle<Options> & h5, std::array<uint32_t, 8> & data5
+            Handle<Options> & h1, std::array<uint64_t, 8> & data1,
+            Handle<Options> & h2, std::array<uint64_t, 8> & data2,
+            Handle<Options> & h3, std::array<uint64_t, 8> & data3,
+            Handle<Options> & h4, std::array<uint64_t, 8> & data4,
+            Handle<Options> & h5, std::array<uint64_t, 8> & data5
             )
         : task_id(task_id)
         , data1(data1)
@@ -174,7 +174,7 @@ int main(int argc, char* argv[])
     generate_access_pattern();
 
     SuperGlue<Options> tm( n_threads );
-    std::vector< std::array<uint32_t, 8> > data( n_resources );
+    std::vector< std::array<uint64_t, 8> > data( n_resources );
     std::vector< Handle<Options> > resources( n_resources );
 
     auto start = high_resolution_clock::now();

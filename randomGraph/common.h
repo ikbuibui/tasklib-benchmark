@@ -16,7 +16,7 @@ unsigned max_dependencies = 0;
 std::mt19937 gen;
 
 std::vector<std::vector<unsigned>> access_pattern;
-std::vector<std::array<uint32_t, 8>> expected_hash;
+std::vector<std::array<uint64_t, 8>> expected_hash;
 
 void read_args(int argc, char* argv[])
 {
@@ -55,7 +55,7 @@ void sleep(std::chrono::microseconds d)
 }
 
 void hash(unsigned task_id,
-          std::array<uint32_t, 8> & val)
+          std::array<uint64_t, 8> & val)
 {
     val[0] += task_id;
 
@@ -75,7 +75,7 @@ void generate_access_pattern()
     std::uniform_int_distribution<unsigned> distrib_n_deps(min_dependencies, max_dependencies);
     std::uniform_int_distribution<unsigned> distrib_resource(0, n_resources - 1);
 
-    expected_hash = std::vector<std::array<uint32_t, 8>>(n_resources);
+    expected_hash = std::vector<std::array<uint64_t, 8>>(n_resources);
     std::vector<unsigned> path_length(n_resources);
 
     for(int i = 0; i < n_tasks; ++i)

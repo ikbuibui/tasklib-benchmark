@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
 
     rg::init(n_threads);
 
-    std::vector<rg::IOResource<std::array<uint32_t, 8>>> resources(n_resources);
+    std::vector<rg::IOResource<std::array<uint64_t, 8>>> resources(n_resources);
 
     auto start = high_resolution_clock::now();
 
@@ -114,7 +114,6 @@ int main(int argc, char* argv[])
         }
 
     std::cout << "success" << std::endl;
-    rg::finalize();
 
     return 0;
 }
