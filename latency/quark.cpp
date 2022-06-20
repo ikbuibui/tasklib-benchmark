@@ -35,7 +35,7 @@ int main(int argc, char* argv[])
     }
 
     avg_latency /= n_tasks;
-    std::cout << "avg latency = " << avg_latency.count() << " ns" << std::endl;
+    std::cout << "avg latency = " << avg_latency.count()/1000.0 << " μs" << std::endl;
 
     return 0;
 }
