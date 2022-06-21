@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
     if( argc > 1 )
         n_tasks = atoi(argv[1]);
 
-    Quark * quark = QUARK_New(2);
+    Quark * quark = QUARK_New(1);
 
     time_point<high_resolution_clock> start;
 
@@ -29,8 +29,8 @@ int main(int argc, char* argv[])
                           time_point<high_resolution_clock> * start;
                           quark_unpack_args_1( quark, start );
 
-                          //std::unique_lock<std::mutex> l(m);
-                          //cv.wait(l, []{ return ready; });
+                          std::unique_lock<std::mutex> l(m);
+                          cv.wait(l, []{ return ready; });
 
                           *start = high_resolution_clock::now();
                       },
@@ -61,16 +61,13 @@ int main(int argc, char* argv[])
                           auto end = high_resolution_clock::now();
                           nanoseconds avg_deadtime = duration_cast<nanoseconds>(end - *start);
                           avg_deadtime /= (n_tasks+1);
-                          std::cout << "avg deadtime = " << avg_deadtime.count()/1000.0 << " μs" << std::endl;
+                          std::cout << "avg deadtime: " << avg_deadtime.count()/1000.0 << " μs" << std::endl;
                       },
                       NULL,
                       sizeof(time_point<high_resolution_clock>), &start, INOUT,
                       0);
 
-    {
-        std::unique_lock<std::mutex> l(m);
-        ready = true;
-    }
+    ready = true;
     cv.notify_one();
 
     QUARK_Waitall(quark);

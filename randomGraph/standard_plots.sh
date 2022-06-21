@@ -19,15 +19,15 @@ export n_workers=4
 OUT_B=$OUTPUT
 
 ## Case C: Random Graph
-export n_resources=20
+export n_resources=8
 export min_dependencies=1
 export max_dependencies=5
-export n_workers=4
+export n_workers=8
 . ./make_plot.sh
 OUT_C=$OUTPUT
 
 ## Case D: Many Workers
-export n_resources=20
+export n_resources=16
 export min_dependencies=1
 export max_dependencies=5
 export n_workers=16

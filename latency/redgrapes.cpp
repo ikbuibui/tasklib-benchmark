@@ -14,13 +14,21 @@ int main(int argc, char* argv[])
 {
     rg::init(n_threads);
 
+    //warmup
+    for(unsigned i = 0; i < 100; ++i)
+        rg::emplace_task(
+            []() {
+            });
+
+    rg::barrier();
+    
     nanoseconds avg_latency(0);
 
     for(unsigned i = 0; i < n_tasks; ++i)
     {
         auto start = high_resolution_clock::now();
         auto stop = rg::emplace_task(
-            [start]() {
+            []() {
                 return high_resolution_clock::now();
             }).get();
 

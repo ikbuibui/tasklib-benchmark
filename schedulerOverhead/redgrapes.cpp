@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
             auto end = high_resolution_clock::now();
             nanoseconds avg_deadtime = duration_cast<nanoseconds>(end - *start);
             avg_deadtime /= (n_tasks+1);
-            std::cout << "avg deadtime = " << avg_deadtime.count()/1000.0 << " μs" << std::endl;
+            std::cout << "avg deadtime: " << avg_deadtime.count()/1000.0 << " μs" << std::endl;
         },
         start.write());
 
