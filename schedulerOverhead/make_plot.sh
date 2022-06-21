@@ -6,16 +6,15 @@ cmake .. -DCMAKE_CXX_FLAGS="-DDEPENDENCIES_PER_TASK=$n_dependencies_per_task"
 make -j
 cd ..
 
-
 n_repeat=5
 
-for lib in redgrapes superglue;
+for lib in redgrapes superglue quark;
 do
-
     truncate -s 0 ${lib}_data
 
     for n_tasks in 1 2 4 8 16 32 64 128 256 512 1024 2048
     do
+	
 	DATA=""
 
 #	for i in $(seq $n_repeat);
@@ -52,10 +51,10 @@ gnuplot -p \
    -e 'set key right top' \
    -e 'set grid' \
    -e 'set logscale x 2' \
-   -e 'set  logscale y 2' \
-   -e 'plot "redgrapes_data" using 1:2 title "RedGrapes Emplace" with lines,
-            "superglue_data" using 1:2 title "SuperGlue Emplace" with lines'
-#            "quark_data" using 1:2:3:4 title "Quark" with yerrorlines'
+   -e 'set logscale y 2' \
+   -e 'plot "redgrapes_data" using 1:2 title "RedGrapes" with lines,
+            "superglue_data" using 1:2 title "SuperGlue" with lines,
+            "quark_data" using 1:2 title "Quark" with lines'
 
 gnuplot -p \
    -e "set output \"$SCHEDULE_OUT\"" \
@@ -66,10 +65,10 @@ gnuplot -p \
    -e 'set key right top' \
    -e 'set grid' \
    -e 'set logscale x 2' \
-   -e 'set  logscale y 2' \
-   -e 'plot "redgrapes_data" using 1:3 title "RedGrapes Schedule" with lines,
-            "superglue_data" using 1:3 title "SuperGlue Schedule" with lines'
-#            "quark_data" using 1:2:3:4 title "Quark" with yerrorlines'
+   -e 'set logscale y 2' \
+   -e 'plot "redgrapes_data" using 1:3 title "RedGrapes" with lines,
+            "superglue_data" using 1:3 title "SuperGlue" with lines,
+            "quark_data" using 1:3 title "Quark" with lines'
 
 montage $EMPLACE_OUT $SCHEDULE_OUT -geometry +2+1 bench_montage_overhead.png
 
