@@ -10,7 +10,7 @@ n_repeat=${n_repeat-10}
 
 mkdir build
 cd build
-cmake .. -DCMAKE_CXX_FLAGS="-DDEPENDENCIES_PER_TASK=$n_dependencies_per_task"
+cmake ..
 make -j
 cd ..
 
