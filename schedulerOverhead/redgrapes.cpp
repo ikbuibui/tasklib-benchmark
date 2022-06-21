@@ -20,13 +20,24 @@ int main(int argc, char* argv[])
     if( argc > 1 )
         n_tasks = atoi(argv[1]);
 
-    rg::init(1);    
+    rg::init(1);
+
     rg::IOResource<time_point<high_resolution_clock>> start;
+
+    /* warmup */
+    {
+        for(unsigned i = 0; i < 64; ++i)
+            rg::emplace_task([](auto start){},
+                             start.write());
+        rg::barrier();
+    }
+
+    /* measure */
 
     rg::emplace_task(
        []( auto start ) {
            std::unique_lock<std::mutex> l(m);
-           cv.wait(l, [&ready]{ return ready; });
+           cv.wait(l, []{ return ready; });
 
             *start = high_resolution_clock::now();
         },

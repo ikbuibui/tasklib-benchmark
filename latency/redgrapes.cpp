@@ -14,14 +14,15 @@ int main(int argc, char* argv[])
 {
     rg::init(n_threads);
 
-    //warmup
-    for(unsigned i = 0; i < 100; ++i)
-        rg::emplace_task(
-            []() {
-            });
+    /* warmup */
+    {
+        for(unsigned i = 0; i < 64; ++i)
+            rg::emplace_task(
+                             []{});
+        rg::barrier();
+    }
 
-    rg::barrier();
-    
+    /* measure */
     nanoseconds avg_latency(0);
 
     for(unsigned i = 0; i < n_tasks; ++i)

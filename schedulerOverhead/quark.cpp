@@ -24,6 +24,22 @@ int main(int argc, char* argv[])
 
     time_point<high_resolution_clock> start;
 
+    /* warmup */
+    {
+        for(unsigned i = 0; i < 64; ++i)
+            QUARK_Insert_Task(quark,
+                              [](Quark * quark)
+                              {
+                              },
+                              NULL,
+                              sizeof(time_point<high_resolution_clock>), &start, INOUT,
+                              0);
+        QUARK_Waitall(quark);
+    }
+
+
+    /* measure */
+
     QUARK_Insert_Task(quark,
                       [](Quark * quark) {
                           time_point<high_resolution_clock> * start;

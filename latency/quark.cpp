@@ -23,8 +23,16 @@ int main(int argc, char* argv[])
 {
     Quark * quark = QUARK_New(n_threads);
 
-    nanoseconds avg_latency(0);
-    
+    /* warmup */
+    {
+        for( unsigned i = 0; i < 64; ++i )
+            QUARK_Insert_Task(quark, myTask0, NULL, 0);
+
+        QUARK_Waitall(quark);
+    }
+
+    /* measure */
+    nanoseconds avg_latency(0);    
     for( unsigned i = 0; i < n_tasks; ++i )
     {
         auto start = high_resolution_clock::now();

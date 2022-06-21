@@ -25,7 +25,7 @@ struct StartTask : Task<Options, 1> {
     void run()
     {
         std::unique_lock<std::mutex> l(m);
-        cv.wait(l, [&ready]{ return ready; });
+        cv.wait(l, []{ return ready; });
 
         start = high_resolution_clock::now();
     }
@@ -65,6 +65,15 @@ int main(int argc, char* argv[])
     SuperGlue<Options> sg(1);
 
     Handle<Options> h0;
+
+    /* warmup */
+    {
+        for(unsigned i = 0; i < 64; ++i)
+            sg.submit(new EmptyTask(h0));
+        sg.barrier();
+    }
+
+    /* measure */
     sg.submit(new StartTask(h0));
 
     auto task_create_start = high_resolution_clock::now();

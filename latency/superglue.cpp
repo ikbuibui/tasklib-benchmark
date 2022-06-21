@@ -28,8 +28,19 @@ int main(int argc, char* argv[])
 {
     SuperGlue<Options> sg(1);
 
-    nanoseconds avg_latency(0);
+    /* warmup */
+    {
+        auto stop = high_resolution_clock::now();
+        for(unsigned i = 0; i < 64; ++i)
+            sg.submit(new LatencyTask(stop));
 
+        sg.barrier();
+    }
+
+    /* measure */
+    
+    nanoseconds avg_latency(0);
+    
     for(unsigned i = 0; i < n_tasks; ++i)
     {
         auto start = high_resolution_clock::now();
