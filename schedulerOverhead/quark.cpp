@@ -71,7 +71,8 @@ int main(int argc, char* argv[])
 
     QUARK_Waitall(quark);
 
-    std::cout << "avg task emplace time: " << duration_cast<nanoseconds>(task_create_end - task_create_start).count() /1000.0 << " μs" << std::endl;
+    auto avg_task_create_overhead = duration_cast<nanoseconds>(task_create_end - task_create_start) / n_tasks;
+    std::cout << "avg task emplace time: " << avg_task_create_overhead.count()/1000.0 << " μs" << std::endl;
 
     return 0;
 }
