@@ -30,20 +30,20 @@ In this case, all tasks are independent, i.e. they do not use any resources, so 
 We measure the total execution time and take the difference to the ideal execution time and divide by the number of tasks. This yields the average overhead per task.
 Now multiple workers (4) are used.
 
-![Independent Tasks](bench_res0_dep0_0_dur25_thr4.png)
+![Independent Tasks](bench_res0_dep0_0_dur25_25_thr4.png)
 
 ### Chains
 Here we create tasks with exactly one dependency each. This is done by having as many resources as workers (4 in this case) and randomly choosing a resource for each task.
 
-![Chains](bench_res4_dep1_1_dur25_thr4.png)
+![Chains](bench_res4_dep1_1_dur25_25_thr4.png)
 
 ### Random Graph
 Now, for each task, the number of dependencies it has is randomly distributed, where each task has at least one dependency and at maximum five. Then, for each required dependency a unique resource is chosen which the task uses.
 Since the number of workers and thus the actual amount parallelism is finite, we must be careful not to introduce potential parallelism that exceeds our practical capabilities. Otherwise, the unrealistically short critical paths would create a falsely high ovearhead measure.
 Therefore the number of resources is equal to the number of workers, to limit potential parallelism.
 
-![Random Graph Benchmark](bench_res8_dep1_5_dur25_thr8.png)
-![Random Graph Benchmark](bench_res16_dep1_5_dur25_thr16.png)
+![Random Graph Benchmark](bench_res16_dep1_5_dur25_25_thr16.png)
+![Random Graph Benchmark](bench_res16_dep1_5_dur25_250_thr16.png)
 
 ## Latency
 This Benchmark measures the latency of creating a single task.
