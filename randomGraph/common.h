@@ -112,6 +112,9 @@ void generate_access_pattern()
       if( pl > max_path_length )
 	max_path_length = pl;
 
+    if( max_dependencies == 0 )
+        max_path_length = n_tasks / n_threads;
+
     std::cout << "max path length = " << max_path_length << std::endl;
 }
 
