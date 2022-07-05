@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
                           time_point<high_resolution_clock> * start;
                           quark_unpack_args_1( quark, start );
 
-                          std::this_thread::sleep_for(seconds(1));
+                          //std::this_thread::sleep_for(seconds(1));
 
                           *start = high_resolution_clock::now();
                       },
