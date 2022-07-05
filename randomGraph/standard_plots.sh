@@ -1,5 +1,6 @@
 
-export task_duration=25
+export min_task_duration=25
+export max_task_duration=25
 export n_repeat=5
 
 ## Case A: No Dependencies
@@ -18,15 +19,21 @@ export n_workers=4
 . ./make_plot.sh
 OUT_B=$OUTPUT
 
-## Case C: Random Graph
-export n_resources=8
+## Case C: Random Graph, fixed duration
+
+export min_task_duration=25
+export max_task_duration=25
+export n_resources=16
 export min_dependencies=1
 export max_dependencies=5
-export n_workers=8
+export n_workers=16
 . ./make_plot.sh
 OUT_C=$OUTPUT
 
-## Case D: Many Workers
+## Case D: Random Graph, random duration
+
+export min_task_duration=25
+export max_task_duration=250
 export n_resources=16
 export min_dependencies=1
 export max_dependencies=5

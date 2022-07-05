@@ -12,13 +12,21 @@ using namespace std::chrono;
 struct Options : public DefaultOptions<Options> {};
 
 struct MyTask0 : Task<Options, 0> {
-    MyTask0()
+    unsigned task_id;
+
+    MyTask0(unsigned task_id)
+        : task_id(task_id)
     {
     }
 
     void run()
     {
-        sleep( task_duration );
+        auto start = high_resolution_clock::now();
+
+        sleep(task_duration[task_id]);
+
+        auto end = high_resolution_clock::now();
+        task_duration[task_id] = duration_cast<std::chrono::microseconds>(end - start);
     }
 };
 
@@ -35,8 +43,13 @@ struct MyTask1 : Task<Options, 1> {
 
     void run()
     {
-        sleep( task_duration );
+        auto start = high_resolution_clock::now();
+
+        sleep(task_duration[task_id]);
         hash(task_id, data1);
+
+        auto end = high_resolution_clock::now();
+        task_duration[task_id] = duration_cast<std::chrono::microseconds>(end - start);
     }
 };
 
@@ -58,9 +71,14 @@ struct MyTask2 : Task<Options, 2> {
 
     void run()
     {
-        sleep( task_duration );
+        auto start = high_resolution_clock::now();
+
+        sleep(task_duration[task_id]);
         hash(task_id, data1);
         hash(task_id, data2);
+
+        auto end = high_resolution_clock::now();
+        task_duration[task_id] = duration_cast<std::chrono::microseconds>(end - start);
     }
 };
 
@@ -86,10 +104,15 @@ struct MyTask3 : Task<Options, 3> {
 
     void run()
     {
-        sleep( task_duration );
+        auto start = high_resolution_clock::now();
+
+        sleep(task_duration[task_id]);
         hash(task_id, data1);
         hash(task_id, data2);
         hash(task_id, data3);
+
+        auto end = high_resolution_clock::now();
+        task_duration[task_id] = duration_cast<std::chrono::microseconds>(end - start);
     }
 };
 
@@ -120,11 +143,16 @@ struct MyTask4 : Task<Options, 4> {
 
     void run()
     {
-        sleep( task_duration );
+        auto start = high_resolution_clock::now();
+
+        sleep(task_duration[task_id]);
         hash(task_id, data1);
         hash(task_id, data2);
         hash(task_id, data3);
         hash(task_id, data4);
+
+        auto end = high_resolution_clock::now();
+        task_duration[task_id] = duration_cast<std::chrono::microseconds>(end - start);
     }
 };
 
@@ -159,12 +187,17 @@ struct MyTask5 : Task<Options, 5> {
 
     void run()
     {
-        sleep( task_duration );
+        auto start = high_resolution_clock::now();
+
+        sleep(task_duration[task_id]);
         hash(task_id, data1);
         hash(task_id, data2);
         hash(task_id, data3);
         hash(task_id, data4);
         hash(task_id, data5);
+
+        auto end = high_resolution_clock::now();
+        task_duration[task_id] = duration_cast<std::chrono::microseconds>(end - start);
     }
 };
 
@@ -183,7 +216,7 @@ int main(int argc, char* argv[])
         switch( access_pattern[i].size() )
         {
         case 0:
-            tm.submit( new MyTask0() );
+            tm.submit( new MyTask0(i) );
             break;
 
         case 1:
@@ -232,6 +265,8 @@ int main(int argc, char* argv[])
 
     std::cout << "success" << std::endl;
 
+    get_critical_path();
+    
     return 0;
 }
 

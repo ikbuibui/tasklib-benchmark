@@ -22,7 +22,14 @@ int main(int argc, char* argv[])
         switch(access_pattern[i].size())
         {
         case 0:
-            rg::emplace_task([i]() { sleep(task_duration); });
+            rg::emplace_task([i]() {
+                auto start = high_resolution_clock::now();
+
+                sleep(task_duration[i]);
+
+                auto end = high_resolution_clock::now();
+                task_duration[i] = duration_cast<std::chrono::microseconds>(end - start);
+            });
             break;
 
         case 1:
@@ -31,10 +38,11 @@ int main(int argc, char* argv[])
                 {
                     auto start = high_resolution_clock::now();
 
-                    sleep(task_duration);
+                    sleep(task_duration[i]);
                     hash(i, *ra1);
 
                     auto end = high_resolution_clock::now();
+                    task_duration[i] = duration_cast<std::chrono::microseconds>(end - start);
                 },
                 resources[access_pattern[i][0]].write());
             break;
@@ -43,9 +51,14 @@ int main(int argc, char* argv[])
             rg::emplace_task(
                 [i](auto ra1, auto ra2)
                 {
-                    sleep(task_duration);
+                    auto start = high_resolution_clock::now();
+
+                    sleep(task_duration[i]);
                     hash(i, *ra1);
                     hash(i, *ra2);
+
+                    auto end = high_resolution_clock::now();
+                    task_duration[i] = duration_cast<std::chrono::microseconds>(end - start);
                 },
                 resources[access_pattern[i][0]].write(),
                 resources[access_pattern[i][1]].write());
@@ -55,10 +68,15 @@ int main(int argc, char* argv[])
             rg::emplace_task(
                 [i](auto ra1, auto ra2, auto ra3)
                 {
-                    sleep(task_duration);
+                    auto start = high_resolution_clock::now();
+
+                    sleep(task_duration[i]);
                     hash(i, *ra1);
                     hash(i, *ra2);
                     hash(i, *ra3);
+
+                    auto end = high_resolution_clock::now();
+                    task_duration[i] = duration_cast<std::chrono::microseconds>(end - start);
                 },
                 resources[access_pattern[i][0]].write(),
                 resources[access_pattern[i][1]].write(),
@@ -69,11 +87,16 @@ int main(int argc, char* argv[])
             rg::emplace_task(
                 [i](auto ra1, auto ra2, auto ra3, auto ra4)
                 {
-                    sleep(task_duration);
+                    auto start = high_resolution_clock::now();
+
+                    sleep(task_duration[i]);
                     hash(i, *ra1);
                     hash(i, *ra2);
                     hash(i, *ra3);
                     hash(i, *ra4);
+
+                    auto end = high_resolution_clock::now();
+                    task_duration[i] = duration_cast<std::chrono::microseconds>(end - start);
                 },
                 resources[access_pattern[i][0]].write(),
                 resources[access_pattern[i][1]].write(),
@@ -85,13 +108,17 @@ int main(int argc, char* argv[])
             rg::emplace_task(
                 [i](auto ra1, auto ra2, auto ra3, auto ra4, auto ra5)
                 {
-                    sleep(task_duration);
+                    auto start = high_resolution_clock::now();
 
+                    sleep(task_duration[i]);
                     hash(i, *ra1);
                     hash(i, *ra2);
                     hash(i, *ra3);
                     hash(i, *ra4);
                     hash(i, *ra5);
+
+                    auto end = high_resolution_clock::now();
+                    task_duration[i] = duration_cast<std::chrono::microseconds>(end - start);
                 },
                 resources[access_pattern[i][0]].write(),
                 resources[access_pattern[i][1]].write(),
@@ -114,6 +141,8 @@ int main(int argc, char* argv[])
         }
 
     std::cout << "success" << std::endl;
+
+    get_critical_path();
 
     return 0;
 }

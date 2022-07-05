@@ -11,7 +11,15 @@ using namespace std::chrono;
 
 void myTask0(Quark * quark)
 {
-    sleep( task_duration );
+    unsigned task_id;
+    quark_unpack_args_1( quark, task_id );
+
+    auto start = high_resolution_clock::now();
+
+    sleep(task_duration[task_id]);
+
+    auto end = high_resolution_clock::now();
+    task_duration[task_id] = duration_cast<std::chrono::microseconds>(end - start);
 }
 void myTask1(Quark * quark)
 {
@@ -19,8 +27,13 @@ void myTask1(Quark * quark)
     std::array<uint64_t, 8> *data1;
     quark_unpack_args_2( quark, task_id, data1 );
 
-    sleep( task_duration );
+    auto start = high_resolution_clock::now();
+
+    sleep(task_duration[task_id]);
     hash(task_id, *data1);
+
+    auto end = high_resolution_clock::now();
+    task_duration[task_id] = duration_cast<std::chrono::microseconds>(end - start);
 }
 void myTask2(Quark * quark)
 {
@@ -28,9 +41,14 @@ void myTask2(Quark * quark)
     std::array<uint64_t, 8> *data1, *data2;
     quark_unpack_args_3( quark, task_id, data1, data2 );
 
-    sleep( task_duration );
+    auto start = high_resolution_clock::now();
+
+    sleep(task_duration[task_id]);
     hash(task_id, *data1);
     hash(task_id, *data2);
+
+    auto end = high_resolution_clock::now();
+    task_duration[task_id] = duration_cast<std::chrono::microseconds>(end - start);
 }
 void myTask3(Quark * quark)
 {
@@ -38,10 +56,15 @@ void myTask3(Quark * quark)
     std::array<uint64_t, 8> *data1, *data2, *data3;
     quark_unpack_args_4( quark, task_id, data1, data2, data3 );
 
-    sleep( task_duration );
+    auto start = high_resolution_clock::now();
+
+    sleep(task_duration[task_id]);
     hash(task_id, *data1);
     hash(task_id, *data2);
     hash(task_id, *data3);
+
+    auto end = high_resolution_clock::now();
+    task_duration[task_id] = duration_cast<std::chrono::microseconds>(end - start);
 }
 void myTask4(Quark * quark)
 {
@@ -49,11 +72,16 @@ void myTask4(Quark * quark)
     std::array<uint64_t, 8> *data1, *data2, *data3, *data4;
     quark_unpack_args_5( quark, task_id, data1, data2, data3, data4 );
 
-    sleep( task_duration );
+    auto start = high_resolution_clock::now();
+    
+    sleep(task_duration[task_id]);
     hash(task_id, *data1);
     hash(task_id, *data2);
     hash(task_id, *data3);
     hash(task_id, *data4);
+
+    auto end = high_resolution_clock::now();
+    task_duration[task_id] = duration_cast<std::chrono::microseconds>(end - start);
 }
 void myTask5(Quark * quark)
 {
@@ -61,12 +89,17 @@ void myTask5(Quark * quark)
     std::array<uint64_t, 8> *data1, *data2, *data3, *data4, *data5;
     quark_unpack_args_6( quark, task_id, data1, data2, data3, data4, data5 );
 
-    sleep( task_duration );
+    auto start = high_resolution_clock::now();
+
+    sleep(task_duration[task_id]);
     hash(task_id, *data1);
     hash(task_id, *data2);
     hash(task_id, *data3);
     hash(task_id, *data4);
     hash(task_id, *data5);
+
+    auto end = high_resolution_clock::now();
+    task_duration[task_id] = duration_cast<std::chrono::microseconds>(end - start);
 }
 
 int main(int argc, char* argv[])
@@ -84,7 +117,9 @@ int main(int argc, char* argv[])
         switch( access_pattern[i].size() )
         {
         case 0:
-            QUARK_Insert_Task(quark, myTask0, NULL, 0);
+            QUARK_Insert_Task(quark, myTask0, NULL,
+                              sizeof(unsigned), &i, VALUE,
+                              0);
             break;
         case 1:
             QUARK_Insert_Task(quark, myTask1, NULL,
@@ -143,6 +178,8 @@ int main(int argc, char* argv[])
     std::cout << "success" << std::endl;
 
     QUARK_Delete(quark);
+
+    get_critical_path();
     
     return 0;
 }
