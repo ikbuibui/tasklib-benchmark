@@ -1,67 +1,95 @@
 #include <chrono>
 #include <redGrapes/redGrapes.hpp>
 #include <redGrapes/resource/ioresource.hpp>
+#include "common.h"
 
-using namespace std::chrono;
+#include <cblas.h>
+#include <lapacke.h>
+
 namespace rg = redGrapes;
-
-int n_threads = 4;
-int DIM = 5;
-microseconds delay(10);
-
-void sleep()
-{
-    auto end = std::chrono::high_resolution_clock::now() + delay;
-    while(std::chrono::high_resolution_clock::now() < end);
-}
+using namespace std::chrono;
 
 int main(int argc, char *argv[]) {
-    if (argc > 1)
-        DIM = atoi(argv[1]);
-    if (argc > 2)
-        delay = microseconds(atoi(argv[2]));
-    if (argc > 3)
-        n_threads = atoi(argv[3]);
-
-    rg::init(n_threads);
-    std::vector<redGrapes::IOResource<int>> A( DIM*DIM );
+    read_args(argc, argv);
+    rg::init(n_workers);
     
+    // initialize tiled matrix in column-major layout
+    std::vector<rg::IOResource<double*>> A(nblks * nblks);
+
+    // allocate each tile (also in column-major layout)
+    for(size_t j = 0; j < nblks; ++j)
+        for(size_t i = 0; i < nblks; ++i)
+            A[j * nblks + i] = new double[blksz * blksz];
+
+    /* ia: row of outer matrix
+       ib: row of inner matrix
+       ja: col of outer matrix
+       jb: col of inner matrix */
+    double * Alin = init_matrix();
+    for(size_t ia = 0; ia < nblks; ++ia)
+        for(size_t ib = 0; ib < blksz; ++ib)
+            for(size_t ja = 0; ja < nblks; ++ja)
+                for(size_t jb = 0; jb < blksz; ++jb)
+                    (*A[ja * nblks + ia])[jb * blksz + ib] = Alin[(ia * blksz + ib) + (ja * blksz + jb) * N];
+
     auto start = high_resolution_clock::now();
 
-    for (int k = 0; k < DIM; ++k) {
-        rg::emplace_task(
-            [](auto a) { sleep(); },
-            A[k*DIM + k].write());
-
-        for (int m = k+1; m < DIM; ++m) {
-            rg::emplace_task(
-                [k, m](auto a, auto b) {
-                    sleep();
-                },
-                A[k*DIM + k].read(),
-                A[m*DIM + k].write());
-        }
-
-        for (int m=k+1; m < DIM; ++m) {
-            rg::emplace_task(
-                [k, m](auto a, auto b) {
-                    sleep();
-                },
-                A[m*DIM + k].read(),
-                A[m*DIM + m].write());
-
-            for (int n=k+1; n < m; ++n) {
+    // calculate cholesky decomposition
+    for(size_t j = 0; j < nblks; j++)
+    {
+        for(size_t k = 0; k < j; k++)
+        {
+            for(size_t i = j + 1; i < nblks; i++)
+            {
+                // A[i,j] = A[i,j] - A[i,k] * (A[j,k])^t
                 rg::emplace_task(
-                    [](auto a, auto b, auto c) {
-                        sleep();
+                    [](auto a, auto b, auto c)
+                    {
+                        cblas_dgemm(CblasColMajor, CblasNoTrans, CblasTrans,
+                                    blksz, blksz, blksz, -1.0, *a, blksz, *b, blksz, 1.0, *c, blksz);
                     },
-                    A[m*DIM + k].read(),
-                    A[n*DIM + k].read(),
-                    A[m*DIM + n].write());
+                    A[k * nblks + i].read(),
+                    A[k * nblks + j].read(),
+                    A[j * nblks + i].write());
             }
         }
-    }
 
+        for(size_t i = 0; i < j; i++)
+        {
+            // A[j,j] = A[j,j] - A[j,i] * (A[j,i])^t
+            rg::emplace_task(
+                [](auto a, auto c)
+                {
+                    cblas_dsyrk(CblasColMajor, CblasLower, CblasNoTrans,
+                                blksz, blksz, -1.0, *a, blksz, 1.0, *c, blksz);
+                },
+                A[i * nblks + j].read(),
+                A[j * nblks + j].write());
+        }
+
+        // Cholesky Factorization of A[j,j]
+        rg::emplace_task(
+            [j](auto a)
+            {
+                LAPACKE_dpotrf(LAPACK_COL_MAJOR, 'L', blksz, *a, blksz);
+            },
+            A[j * nblks + j].write());
+
+        for(size_t i = j + 1; i < nblks; i++)
+        {
+            // A[i,j] <- A[i,j] = X * (A[j,j])^t
+            rg::emplace_task(
+                [](auto a, auto b)
+                {
+                    cblas_dtrsm(CblasColMajor,
+                                CblasRight, CblasLower, CblasTrans, CblasNonUnit,
+                                blksz, blksz, 1.0, *a, blksz, *b, blksz);
+                },
+                A[j * nblks + j].read(),
+                A[j * nblks + i].write());
+        }
+    }
+    
     rg::barrier();
     
     auto end = high_resolution_clock::now();

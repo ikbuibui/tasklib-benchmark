@@ -1,88 +1,140 @@
 #include <chrono>
 #include <iostream>
 #include "sg/superglue.hpp"
+#include "common.h"
 
+#include <cblas.h>
+#include <lapacke.h>
 
 using namespace std::chrono;
-
-int n_threads = 4;
-int DIM = 5;
-microseconds delay(10);
-
-void sleep()
-{
-    auto end = std::chrono::high_resolution_clock::now() + delay;
-    while(std::chrono::high_resolution_clock::now() < end);
-}
 
 struct Options : public DefaultOptions<Options> {};
 
 struct potrf : public Task<Options, 1> {
-    potrf(double *A, Handle<Options> &h) {
+    double * a;
+
+    potrf(double * A, Handle<Options> &h)
+        : a(A)
+    {
         register_access(ReadWriteAdd::write, h);
     }
-    void run() { sleep(); }
+
+    void run()
+    {
+        LAPACKE_dpotrf(LAPACK_COL_MAJOR, 'L', blksz, a, blksz);
+    }
 };
 
 struct gemm : public Task<Options, 3> {
-    gemm(double *A, double *B, double *C,
-         Handle<Options> &hA, Handle<Options> &hB, Handle<Options> &hC) {
+    double const * a;
+    double const * b;
+    double * c;
+
+    gemm(double const * A, double const * B, double * C,
+         Handle<Options> &hA, Handle<Options> &hB, Handle<Options> &hC)
+        : a(A), b(B), c(C)
+    {
         register_access(ReadWriteAdd::read, hA);
         register_access(ReadWriteAdd::read, hB);
         register_access(ReadWriteAdd::write, hC);
     }
-    void run() { sleep(); }
+
+    void run()
+    {
+        cblas_dgemm(CblasColMajor, CblasNoTrans, CblasTrans,
+                    blksz, blksz, blksz, -1.0, a, blksz, b, blksz, 1.0, c, blksz);
+    }
 };
 
 struct trsm : public Task<Options, 2> {
-    trsm(double *T, double *B,
-         Handle<Options> &hT, Handle<Options> &hB) {
-        register_access(ReadWriteAdd::read, hT);
+    double const * a;
+    double * b;
+
+    trsm(double const * A, double * B,
+         Handle<Options> &hA, Handle<Options> &hB)
+        : a(A), b(B)
+    {
+        register_access(ReadWriteAdd::read, hA);
         register_access(ReadWriteAdd::write, hB);
     }
-    void run() { sleep(); }
+
+    void run()
+    {
+        cblas_dtrsm(CblasColMajor,
+                    CblasRight, CblasLower, CblasTrans, CblasNonUnit,
+                    blksz, blksz, 1.0, a, blksz, b, blksz);
+    }
 };
 
-struct syrk : public Task<Options, 2> {
-    syrk(double *A, double *C,
-         Handle<Options> &hA, Handle<Options> &hC) {
+struct syrk : public Task<Options, 2>
+{
+    double const * a;
+    double * c;
+    syrk(double const * A, double * C,
+         Handle<Options> &hA, Handle<Options> &hC)
+        : a(A), c(C)
+    {
         register_access(ReadWriteAdd::read, hA);
         register_access(ReadWriteAdd::write, hC);
     }
-    void run() { sleep(); }
+
+    void run() {
+        cblas_dsyrk(CblasColMajor, CblasLower, CblasNoTrans,
+                    blksz, blksz, -1.0, a, blksz, 1.0, c, blksz);
+    }
 };
 
 int main(int argc, char *argv[]) {
-    if (argc > 1)
-        DIM = atoi(argv[1]);
-    if (argc > 2)
-        delay = microseconds(atoi(argv[2]));
-    if (argc > 3)
-        n_threads = atoi(argv[3]);
+    read_args(argc, argv);
+    SuperGlue<Options> tm(n_workers);
 
-    SuperGlue<Options> tm(n_threads);
+    // initialize tiled matrix in column-major layout
+    std::vector<double*> A(nblks * nblks);
 
-    double *A = (double*) malloc(DIM*DIM*sizeof(double));
-    Handle<Options> *h = new Handle<Options>[DIM*DIM];
+    // allocate each tile (also in column-major layout)
+    for(size_t j = 0; j < nblks; ++j)
+        for(size_t i = 0; i < nblks; ++i)
+            A[j * nblks + i] = new double[blksz * blksz];
+
+    Handle<Options> *h = new Handle<Options>[nblks * nblks];
+
+    /* ia: row of outer matrix
+       ib: row of inner matrix
+       ja: col of outer matrix
+       jb: col of inner matrix */
+    double * Alin = init_matrix();
+    for(size_t ia = 0; ia < nblks; ++ia)
+        for(size_t ib = 0; ib < blksz; ++ib)
+            for(size_t ja = 0; ja < nblks; ++ja)
+                for(size_t jb = 0; jb < blksz; ++jb)
+                    (A[ja * nblks + ia])[jb * blksz + ib] = Alin[(ia * blksz + ib) + (ja * blksz + jb) * N];
 
     auto start = high_resolution_clock::now();
 
-    for (int k = 0; k < DIM; ++k) {
-        tm.submit(new potrf(&A[k*DIM+k], h[k*DIM+k]));
-
-        for (int m = k+1; m < DIM; ++m) {
-            tm.submit(new trsm(&A[k*DIM+k], &A[m*DIM+k],
-                               h[k*DIM+k], h[m*DIM+k]));
+    // calculate cholesky decomposition
+    for(size_t j = 0; j < nblks; j++)
+    {
+        for(size_t k = 0; k < j; k++)
+        {
+            for(size_t i = j + 1; i < nblks; i++)
+            {
+                tm.submit(new gemm(A[k * nblks + i], A[k * nblks + j], A[j * nblks + i],
+                                   h[k * nblks + i], h[k * nblks + j], h[j * nblks + i]) );
+            }
         }
 
-        for (int m=k+1; m < DIM; ++m) {
-            tm.submit(new syrk(&A[m*DIM+k], &A[m*DIM+m],
-                                h[m*DIM+k], h[m*DIM+m]));
+        for(size_t i = 0; i < j; i++)
+        {
+            tm.submit(new syrk(A[i * nblks + j], A[j * nblks + j],
+                                h[i * nblks + j], h[j* nblks + j]));
+        }
 
-            for (int n=k+1; n < m; ++n) {
-                tm.submit(new gemm(&A[m*DIM+k], &A[n*DIM+k], &A[m*DIM+n],
-                                   h[m*DIM+k], h[n*DIM+k], h[m*DIM+n]) );
-            }
+        tm.submit(new potrf(A[j * nblks + j], h[j * nblks + j]));
+
+        for(size_t i = j + 1; i < nblks; i++)
+        {
+            tm.submit(new trsm(A[j*nblks + j], A[j * nblks + i],
+                               h[j * nblks + j], h[j * nblks + i]));
         }
     }
 
