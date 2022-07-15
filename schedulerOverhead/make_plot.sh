@@ -44,7 +44,7 @@ SCHEDULE_OUT="bench_schedule_overhead.png"
 
 gnuplot -p \
    -e "set output \"$EMPLACE_OUT\"" \
-   -e 'set terminal png size 800,600 enhanced font "Computer Modern,16"' \
+   -e 'set terminal pngcairo enhanced truecolor size 1200,900 font "DejaVu Sans,24"' \
    -e "set title \"Task-Creation Overhead\"" \
    -e 'set xlabel "number of tasks"' \
    -e 'set ylabel "task creation overhead (μs)"' \
@@ -52,13 +52,18 @@ gnuplot -p \
    -e 'set grid' \
    -e 'set logscale x 2' \
    -e 'set logscale y 2' \
-   -e 'plot "redgrapes_data" using 1:2 title "RedGrapes" with lines,
-            "superglue_data" using 1:2 title "SuperGlue" with lines,
-            "quark_data" using 1:2 title "Quark" with lines'
+   -e 'set style line 11 lc rgb "#555555" lt 1' \
+   -e 'set border 3 back ls 11' \
+   -e 'set tics nomirror' \
+   -e 'set style line 12 lc rgb "#555555" lt 0 lw 1' \
+   -e 'set grid back ls 12'  \
+   -e 'plot "quark_data" using 1:2 title "Quark" with linespoints lt 5 dt 3 lc rgb "#006DD5",
+            "superglue_data" using 1:2 title "SuperGlue" with linespoints lt 7 dt 4 lc rgb "#20D500",
+            "redgrapes_data" using 1:2 title "RedGrapes" with linespoints lt 9 dt 7 lc rgb "#670496"'
 
 gnuplot -p \
    -e "set output \"$SCHEDULE_OUT\"" \
-   -e 'set terminal png size 800,600 enhanced font "Computer Modern,16"' \
+   -e 'set terminal pngcairo enhanced truecolor size 1200,900 font "DejaVu Sans,24"' \
    -e "set title \"Scheduling Overhead\"" \
    -e 'set xlabel "number of tasks"' \
    -e 'set ylabel "scheduling overhead per task (μs)"' \
@@ -66,9 +71,14 @@ gnuplot -p \
    -e 'set grid' \
    -e 'set logscale x 2' \
    -e 'set logscale y 2' \
-   -e 'plot "redgrapes_data" using 1:3 title "RedGrapes" with lines,
-            "superglue_data" using 1:3 title "SuperGlue" with lines,
-            "quark_data" using 1:3 title "Quark" with lines'
+   -e 'set style line 11 lc rgb "#555555" lt 1' \
+   -e 'set border 3 back ls 11' \
+   -e 'set tics nomirror' \
+   -e 'set style line 12 lc rgb "#555555" lt 0 lw 1' \
+   -e 'set grid back ls 12'  \
+   -e 'plot "quark_data" using 1:3 title "Quark" with linespoints lt 5 dt 3 lc rgb "#006DD5",
+            "superglue_data" using 1:3 title "SuperGlue" with linespoints lt 7 dt 4 lc rgb "#20D500",
+            "redgrapes_data" using 1:3 title "RedGrapes" with linespoints lt 9 dt 7 lc rgb "#670496"'
 
 montage $EMPLACE_OUT $SCHEDULE_OUT -geometry +2+1 bench_montage_overhead.png
 

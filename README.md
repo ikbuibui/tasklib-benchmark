@@ -53,7 +53,6 @@ Since this metric is only useful if we assume no dependencies of the task, and t
 ![Latency](bench_latency.png)
 
 ## Cholesky Factorization
-As a more practical example, we create the task-graph that is required for computing a *tiled* cholesky decomposition using BLAS functions and measure the total runtime.
-However instead of doing the actual computations, we use a sleep of 10μs. (todo why)
+As a more practical example, we calculate a *tiled* cholesky decomposition using BLAS functions on a randomly generated, 1GiB sized matrix and measure the total runtime.
 
-![Cholesky Benchmark](bench_cholesky_w4_d10.png)
+![Cholesky Benchmark](bench_cholesky_w4_m4096.png)
