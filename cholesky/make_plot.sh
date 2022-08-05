@@ -7,7 +7,7 @@ make -j
 cd ..
 
 n_repeat=15
-n_workers=1
+n_workers=4
 matrix_size=4096
 
 for lib in redgrapes superglue quark;

@@ -1,7 +1,7 @@
 
 export min_task_duration=25
 export max_task_duration=25
-export n_repeat=5
+export n_repeat=15
 
 ## Case A: No Dependencies
 export n_resources=0
