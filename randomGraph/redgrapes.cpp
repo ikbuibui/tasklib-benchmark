@@ -128,7 +128,7 @@ int main(int argc, char* argv[])
             break;
         }
 
-    rg::barrier();
+    rg::finalize();
     auto end = high_resolution_clock::now();
 
     fmt::print("total {} μs\n", duration_cast<microseconds>(end - start).count());

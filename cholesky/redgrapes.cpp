@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
         }
     }
     
-    rg::barrier();
+    rg::finalize();
     
     auto end = high_resolution_clock::now();
 
