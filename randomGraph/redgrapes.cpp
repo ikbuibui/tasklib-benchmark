@@ -128,8 +128,10 @@ int main(int argc, char* argv[])
             break;
         }
 
-    rg::finalize();
+    rg::barrier();
     auto end = high_resolution_clock::now();
+
+    rg::finalize();
 
     fmt::print("total {} μs\n", duration_cast<microseconds>(end - start).count());
 

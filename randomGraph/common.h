@@ -72,9 +72,6 @@ void hash(unsigned task_id,
     };
 
     sha256_process((uint32_t*)&state, (uint8_t*) (uint8_t*)&val[0], 32);
-
-    for(int i=0; i<8; ++i)
-        val[i] = state[i];
 }
 
 void generate_access_pattern()
@@ -85,6 +82,9 @@ void generate_access_pattern()
 
     expected_hash = std::vector<std::array<uint64_t, 8>>(n_resources);
 
+    task_duration.reserve(n_tasks);
+    access_pattern.reserve(n_tasks);
+    
     for(int i = 0; i < n_tasks; ++i)
     {
         task_duration.emplace_back(distrib_duration(gen));
