@@ -14,12 +14,11 @@ void myTask0(Quark * quark)
     unsigned task_id;
     quark_unpack_args_1( quark, task_id );
 
-    auto start = high_resolution_clock::now();
+    task_begin[task_id] = high_resolution_clock::now();
 
     sleep(task_duration[task_id]);
 
-    auto end = high_resolution_clock::now();
-    task_duration[task_id] = duration_cast<std::chrono::microseconds>(end - start);
+    task_end[task_id] = high_resolution_clock::now();
 }
 void myTask1(Quark * quark)
 {
@@ -27,13 +26,12 @@ void myTask1(Quark * quark)
     std::array<uint64_t, 8> *data1;
     quark_unpack_args_2( quark, task_id, data1 );
 
-    auto start = high_resolution_clock::now();
+    task_begin[task_id] = high_resolution_clock::now();
 
     sleep(task_duration[task_id]);
     hash(task_id, *data1);
 
-    auto end = high_resolution_clock::now();
-    task_duration[task_id] = duration_cast<std::chrono::microseconds>(end - start);
+    task_end[task_id] = high_resolution_clock::now();
 }
 void myTask2(Quark * quark)
 {
@@ -41,14 +39,13 @@ void myTask2(Quark * quark)
     std::array<uint64_t, 8> *data1, *data2;
     quark_unpack_args_3( quark, task_id, data1, data2 );
 
-    auto start = high_resolution_clock::now();
+    task_begin[task_id] = high_resolution_clock::now();
 
     sleep(task_duration[task_id]);
     hash(task_id, *data1);
     hash(task_id, *data2);
 
-    auto end = high_resolution_clock::now();
-    task_duration[task_id] = duration_cast<std::chrono::microseconds>(end - start);
+    task_end[task_id] = high_resolution_clock::now();
 }
 void myTask3(Quark * quark)
 {
@@ -56,15 +53,14 @@ void myTask3(Quark * quark)
     std::array<uint64_t, 8> *data1, *data2, *data3;
     quark_unpack_args_4( quark, task_id, data1, data2, data3 );
 
-    auto start = high_resolution_clock::now();
+    task_begin[task_id] = high_resolution_clock::now();
 
     sleep(task_duration[task_id]);
     hash(task_id, *data1);
     hash(task_id, *data2);
     hash(task_id, *data3);
 
-    auto end = high_resolution_clock::now();
-    task_duration[task_id] = duration_cast<std::chrono::microseconds>(end - start);
+    task_end[task_id] = high_resolution_clock::now();
 }
 void myTask4(Quark * quark)
 {
@@ -72,7 +68,7 @@ void myTask4(Quark * quark)
     std::array<uint64_t, 8> *data1, *data2, *data3, *data4;
     quark_unpack_args_5( quark, task_id, data1, data2, data3, data4 );
 
-    auto start = high_resolution_clock::now();
+    task_begin[task_id] = high_resolution_clock::now();
     
     sleep(task_duration[task_id]);
     hash(task_id, *data1);
@@ -80,8 +76,7 @@ void myTask4(Quark * quark)
     hash(task_id, *data3);
     hash(task_id, *data4);
 
-    auto end = high_resolution_clock::now();
-    task_duration[task_id] = duration_cast<std::chrono::microseconds>(end - start);
+    task_end[task_id] = high_resolution_clock::now();
 }
 void myTask5(Quark * quark)
 {
@@ -89,7 +84,7 @@ void myTask5(Quark * quark)
     std::array<uint64_t, 8> *data1, *data2, *data3, *data4, *data5;
     quark_unpack_args_6( quark, task_id, data1, data2, data3, data4, data5 );
 
-    auto start = high_resolution_clock::now();
+    task_begin[task_id] = high_resolution_clock::now();
 
     sleep(task_duration[task_id]);
     hash(task_id, *data1);
@@ -98,8 +93,7 @@ void myTask5(Quark * quark)
     hash(task_id, *data4);
     hash(task_id, *data5);
 
-    auto end = high_resolution_clock::now();
-    task_duration[task_id] = duration_cast<std::chrono::microseconds>(end - start);
+    task_end[task_id] = high_resolution_clock::now();
 }
 
 int main(int argc, char* argv[])
@@ -107,7 +101,7 @@ int main(int argc, char* argv[])
     read_args(argc, argv);
     generate_access_pattern();
 
-    Quark * quark = QUARK_New(n_threads);
+    Quark * quark = QUARK_New(n_workers);
 
     std::vector< std::array<uint64_t, 8> > resources(n_resources);
 
@@ -163,10 +157,11 @@ int main(int argc, char* argv[])
             break;
         }
 
+    auto mid = high_resolution_clock::now();
     QUARK_Waitall(quark);
     auto end = high_resolution_clock::now();
 
-    std::cout << "total " << duration_cast<microseconds>(end-start).count() << " μs" << std::endl;
+    QUARK_Delete(quark);
 
     for(int i = 0; i < n_resources; ++i)
         if(resources[i] != expected_hash[i])
@@ -177,7 +172,9 @@ int main(int argc, char* argv[])
 
     std::cout << "success" << std::endl;
 
-    QUARK_Delete(quark);
+    std::cout << "total " << duration_cast<nanoseconds>(end-start).count()/1000.0 << " μs" << std::endl;
+    std::cout << "emplacement " << duration_cast<nanoseconds>(mid-start).count()/1000.0 << " μs" << std::endl;
+    std::cout << "scheduling gap " << duration_cast<nanoseconds>(get_scheduling_gap()).count() / 1000.0 << " μs" << std::endl;
 
     get_critical_path();
     

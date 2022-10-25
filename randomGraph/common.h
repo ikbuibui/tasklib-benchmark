@@ -7,16 +7,22 @@
 #include <algorithm>
 #include "sha256.c"
 
-std::chrono::microseconds min_task_duration(25);
-std::chrono::microseconds max_task_duration(25);
+using namespace std::chrono;
+
+microseconds min_task_duration(25);
+microseconds max_task_duration(25);
 unsigned n_resources = 5;
 unsigned n_tasks = 1000;
-unsigned n_threads = 4;
+unsigned n_workers = 4;
 unsigned min_dependencies = 0;
 unsigned max_dependencies = 0;
+
 std::mt19937 gen;
 
-std::vector<std::chrono::microseconds> task_duration;
+std::vector<microseconds> task_duration;
+std::vector<time_point<high_resolution_clock>> task_begin;
+std::vector<time_point<high_resolution_clock>> task_end;
+
 std::vector<std::vector<unsigned>> access_pattern;
 std::vector<std::array<uint64_t, 8>> expected_hash;
 
@@ -28,7 +34,7 @@ void read_args(int argc, char* argv[])
                   << "] [max_dependencies = " << max_dependencies
                   << "] [min_task_duration (μs) = " << max_task_duration.count()
                   << "] [max_task_duration (μs) = " << min_task_duration.count()
-                  << "] [n_threads = " << n_threads
+                  << "] [n_workers = " << n_workers
                   << "] [seed = 1]" << std::endl;
 
     if(argc > 1)
@@ -44,7 +50,7 @@ void read_args(int argc, char* argv[])
     if(argc > 6)
         max_task_duration = std::chrono::microseconds(atoi(argv[6]));
     if(argc > 7)
-        n_threads = atoi(argv[7]);
+        n_workers = atoi(argv[7]);
     if(argc > 8)
         gen.seed(atoi(argv[8]));
 
@@ -82,29 +88,38 @@ void generate_access_pattern()
 
     expected_hash = std::vector<std::array<uint64_t, 8>>(n_resources);
 
+    task_begin.reserve(n_tasks);
+    task_end.reserve(n_tasks);
     task_duration.reserve(n_tasks);
     access_pattern.reserve(n_tasks);
     
-    for(int i = 0; i < n_tasks; ++i)
+    for(unsigned i = 0; i < n_tasks; ++i)
     {
         task_duration.emplace_back(distrib_duration(gen));
         access_pattern.emplace_back();
-
-        unsigned n_dependencies = distrib_n_deps(gen);
-        for(int j = 0; j < n_dependencies; ++j)
+        
+        if( min_dependencies == 1 && max_dependencies == 1 )
         {
-            std::chrono::microseconds max_path_length(0);
-
-            while(1)
+            // chains with equal length
+            unsigned resource_id = i % n_resources;
+            access_pattern[i].push_back(resource_id);
+            hash(i, expected_hash[resource_id]);
+        }
+        else
+        {
+            unsigned n_dependencies = distrib_n_deps(gen);
+            for(int j = 0; j < n_dependencies; ++j)
             {
-                unsigned resource_id = distrib_resource(gen);
-                if(std::find(access_pattern[i].begin(), access_pattern[i].end(), resource_id)
-                   == access_pattern[i].end())
+                while(1)
                 {
-                    access_pattern[i].push_back(resource_id);
-                    hash(i, expected_hash[resource_id]);
-
-                    break;
+                    unsigned resource_id = distrib_resource(gen);
+                    if(std::find(access_pattern[i].begin(), access_pattern[i].end(), resource_id)
+                       == access_pattern[i].end())
+                    {
+                        access_pattern[i].push_back(resource_id);
+                        hash(i, expected_hash[resource_id]);
+                        break;
+                    }
                 }
             }
         }
@@ -133,10 +148,21 @@ std::chrono::microseconds get_critical_path()
 	max_path_length = pl;
 
     if( max_dependencies == 0 )
-        max_path_length = (min_task_duration * n_tasks) / n_threads;
+        max_path_length = (min_task_duration * n_tasks) / n_workers;
 
     std::cout << "critical path " << max_path_length.count() << " μs" << std::endl;
     
     return max_path_length;
+}
+
+// only in case of chains
+nanoseconds get_scheduling_gap()
+{
+    nanoseconds sum(0);
+    for(unsigned i = n_resources; i < n_tasks; ++i)
+    {
+        sum += duration_cast<nanoseconds>(task_begin[i] - task_end[i - n_resources]);
+    }
+    return sum / (n_tasks - n_resources);
 }
 

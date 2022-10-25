@@ -21,12 +21,9 @@ struct MyTask0 : Task<Options, 0> {
 
     void run()
     {
-        auto start = high_resolution_clock::now();
-
+        task_begin[task_id] = high_resolution_clock::now();
         sleep(task_duration[task_id]);
-
-        auto end = high_resolution_clock::now();
-        task_duration[task_id] = duration_cast<std::chrono::microseconds>(end - start);
+        task_end[task_id] = high_resolution_clock::now();
     }
 };
 
@@ -43,13 +40,12 @@ struct MyTask1 : Task<Options, 1> {
 
     void run()
     {
-        auto start = high_resolution_clock::now();
+        task_begin[task_id] = high_resolution_clock::now();
 
         sleep(task_duration[task_id]);
         hash(task_id, data1);
 
-        auto end = high_resolution_clock::now();
-        task_duration[task_id] = duration_cast<std::chrono::microseconds>(end - start);
+        task_end[task_id] = high_resolution_clock::now();
     }
 };
 
@@ -71,14 +67,13 @@ struct MyTask2 : Task<Options, 2> {
 
     void run()
     {
-        auto start = high_resolution_clock::now();
+        task_begin[task_id] = high_resolution_clock::now();
 
         sleep(task_duration[task_id]);
         hash(task_id, data1);
         hash(task_id, data2);
 
-        auto end = high_resolution_clock::now();
-        task_duration[task_id] = duration_cast<std::chrono::microseconds>(end - start);
+        task_end[task_id] = high_resolution_clock::now();
     }
 };
 
@@ -104,15 +99,14 @@ struct MyTask3 : Task<Options, 3> {
 
     void run()
     {
-        auto start = high_resolution_clock::now();
+        task_begin[task_id] = high_resolution_clock::now();
 
         sleep(task_duration[task_id]);
         hash(task_id, data1);
         hash(task_id, data2);
         hash(task_id, data3);
 
-        auto end = high_resolution_clock::now();
-        task_duration[task_id] = duration_cast<std::chrono::microseconds>(end - start);
+        task_end[task_id] = high_resolution_clock::now();
     }
 };
 
@@ -143,7 +137,7 @@ struct MyTask4 : Task<Options, 4> {
 
     void run()
     {
-        auto start = high_resolution_clock::now();
+        task_begin[task_id] = high_resolution_clock::now();
 
         sleep(task_duration[task_id]);
         hash(task_id, data1);
@@ -151,8 +145,7 @@ struct MyTask4 : Task<Options, 4> {
         hash(task_id, data3);
         hash(task_id, data4);
 
-        auto end = high_resolution_clock::now();
-        task_duration[task_id] = duration_cast<std::chrono::microseconds>(end - start);
+        task_end[task_id] = high_resolution_clock::now();
     }
 };
 
@@ -187,7 +180,7 @@ struct MyTask5 : Task<Options, 5> {
 
     void run()
     {
-        auto start = high_resolution_clock::now();
+        task_begin[task_id] = high_resolution_clock::now();
 
         sleep(task_duration[task_id]);
         hash(task_id, data1);
@@ -196,8 +189,7 @@ struct MyTask5 : Task<Options, 5> {
         hash(task_id, data4);
         hash(task_id, data5);
 
-        auto end = high_resolution_clock::now();
-        task_duration[task_id] = duration_cast<std::chrono::microseconds>(end - start);
+        task_end[task_id] = high_resolution_clock::now();
     }
 };
 
@@ -206,7 +198,7 @@ int main(int argc, char* argv[])
     read_args(argc, argv);
     generate_access_pattern();
 
-    SuperGlue<Options> tm( n_threads );
+    SuperGlue<Options> tm( n_workers );
     std::vector< std::array<uint64_t, 8> > data( n_resources );
     std::vector< Handle<Options> > resources( n_resources );
 
@@ -251,19 +243,22 @@ int main(int argc, char* argv[])
             break;
         }
 
+    auto mid = high_resolution_clock::now();
     tm.barrier();
     auto end = high_resolution_clock::now();
-
-    std::cout << "total " << duration_cast<microseconds>(end-start).count() << " μs" << std::endl;
 
     for(int i = 0; i < n_resources; ++i)
         if(data[i] != expected_hash[i])
         {
             std::cout << "error: invalid result!" << std::endl;
-            return 1;
+            return -1;
         }
 
     std::cout << "success" << std::endl;
+
+    std::cout << "total " << duration_cast<nanoseconds>(end-start).count()/1000.0 << " μs" << std::endl;
+    std::cout << "emplacement " << duration_cast<nanoseconds>(mid-start).count()/1000.0 << " μs" << std::endl;
+    std::cout << "scheduling gap " << duration_cast<nanoseconds>(get_scheduling_gap()).count() / 1000.0 << " μs" << std::endl;
 
     get_critical_path();
     
