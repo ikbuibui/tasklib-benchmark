@@ -10,7 +10,7 @@ do
 	  \"$FILE\" using 1:2:3:4 title \"$NAME\" with yerrorbars lt 5 lc rgb \"$COLOR2\","
 done
 
-GNUPLOT_CMD=$((tail -n+2 | sed '$s/,$//') <<< $GNUPLOT_CMD)
+GNUPLOT_CMD=$(sed '$s/,$//' <<< $GNUPLOT_CMD)
 
 gnuplot -p \
    -e "set output \"${OUTPUT}\"" \
