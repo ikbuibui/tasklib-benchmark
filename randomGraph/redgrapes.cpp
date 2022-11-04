@@ -4,8 +4,14 @@
 #include <redGrapes/redGrapes.hpp>
 #include <redGrapes/resource/ioresource.hpp>
 
+#include <condition_variable>
+
 namespace rg = redGrapes;
 using namespace std::chrono;
+
+std::mutex m;
+std::condition_variable cv;
+bool start_flag = false;
 
 int main(int argc, char* argv[])
 {
@@ -14,7 +20,22 @@ int main(int argc, char* argv[])
 
     rg::init(n_workers);
 
-    std::vector<rg::IOResource<std::array<uint64_t, 8>>> resources(n_resources);
+    std::vector<rg::IOResource<std::array<uint64_t, 8>>> resources( MAX_RESOURCES );
+
+    if( block_execution )
+    {
+        rg::emplace_task([&cv](auto a, auto b, auto c, auto d, auto e) {
+            std::unique_lock<std::mutex> l(m);
+            cv.wait(l, [] {
+                return start_flag;
+            });
+        },
+            resources[0].write(),
+            resources[1].write(),
+            resources[2].write(),
+            resources[3].write(),
+            resources[4].write());
+    }
 
     auto start = high_resolution_clock::now();
 
@@ -123,7 +144,20 @@ int main(int argc, char* argv[])
         }
 
     auto mid = high_resolution_clock::now();
+
+    if( block_execution )
+    {
+        // trigger execution of tasksw
+        {
+            std::unique_lock<std::mutex> l(m);
+            start_flag = true;
+        }
+        cv.notify_all();
+    }
+
+    // wait for execution to finish
     rg::barrier();
+
     auto end = high_resolution_clock::now();
 
     rg::finalize();

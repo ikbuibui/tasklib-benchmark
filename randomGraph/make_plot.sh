@@ -3,10 +3,11 @@
 n_resources=${n_resources-0}
 min_dependencies=${min_dependencies-0}
 max_dependencies=${max_dependencies-0}
-min_task_duration=${min_task_duration-25}
-max_task_duration=${max_task_duration-25}
-n_workers=${n_workers-4}
-n_repeat=${n_repeat-10}
+min_task_duration=${min_task_duration-5}
+max_task_duration=${max_task_duration-5}
+n_workers=${n_workers-8}
+block_exec=${block_exec-"false"}
+n_repeat=${n_repeat-15}
 
 build()
 {
@@ -25,16 +26,24 @@ run()
 	for n_tasks in 1024 2048 4096 8192 16384;
 	do
 	    DATA=""
+	    ARGS="$n_tasks $n_resources $min_dependencies $max_dependencies $min_task_duration $max_task_duration $n_workers $block_exec"
 
 	    for i in $(seq $n_repeat);
 	    do
-		echo $lib $n_tasks $n_resources $min_dependencies $max_dependencies $min_task_duration $max_task_duration $n_workers $i
-		OUTPUT=$(numactl -C 0-$((n_workers - 1)) ./build/$lib $n_tasks $n_resources $min_dependencies $max_dependencies $min_task_duration $max_task_duration $n_workers $i)
-		TOTAL=$(echo $OUTPUT | grep -Po 'total \K[0-9]*')
-		IDEAL=$(echo $OUTPUT | grep -Po 'critical path \K[0-9]*')
-		echo $OUTPUT
+		echo $lib $ARGS $i
+		OUTPUT=$(xargs ./build/$lib <<< "$ARGS $i")
+
+		grep -s 'success' <<< $OUTPUT >/dev/null || exit
+
+		TOTAL=$(grep -Po 'total \K[.0-9]*' <<< $OUTPUT)
+		IDEAL=$(grep -Po 'critical path \K[.0-9]*' <<< $OUTPUT)
+		EMPLACE=$(grep -Po 'emplacement \K[.0-9]*' <<< $OUTPUT)
+		GAP=$(grep -Po 'scheduling gap \K[.0-9]*' <<< $OUTPUT)
 		DIFF=$(bc -l <<< "($TOTAL - $IDEAL) / $n_tasks")
 
+		echo "gap = " $GAP
+		echo "emp = " $EMPLACE
+		
 		DATA="$DIFF $DATA"
 	    done
 	    

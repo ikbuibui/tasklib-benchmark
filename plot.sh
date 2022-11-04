@@ -12,8 +12,6 @@ done
 
 GNUPLOT_CMD=$((tail -n+2 | sed '$s/,$//') <<< $GNUPLOT_CMD)
 
-echo $GNUPLOT_CMD
-
 gnuplot -p \
    -e "set output \"${OUTPUT}\"" \
    -e "set terminal pngcairo enhanced truecolor size 1200,900 font \"DejaVu Sans,24\"" \

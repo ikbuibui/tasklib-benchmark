@@ -5,9 +5,12 @@
 #include <vector>
 #include <array>
 #include <algorithm>
+#include <cstring>
 #include "sha256.c"
 
 using namespace std::chrono;
+
+#define MAX_RESOURCES 5
 
 microseconds min_task_duration(25);
 microseconds max_task_duration(25);
@@ -16,6 +19,7 @@ unsigned n_tasks = 1000;
 unsigned n_workers = 4;
 unsigned min_dependencies = 0;
 unsigned max_dependencies = 0;
+bool block_execution = false;
 
 std::mt19937 gen;
 
@@ -35,6 +39,7 @@ void read_args(int argc, char* argv[])
                   << "] [min_task_duration (μs) = " << max_task_duration.count()
                   << "] [max_task_duration (μs) = " << min_task_duration.count()
                   << "] [n_workers = " << n_workers
+                  << "] [block_execution = " << block_execution
                   << "] [seed = 1]" << std::endl;
 
     if(argc > 1)
@@ -52,12 +57,17 @@ void read_args(int argc, char* argv[])
     if(argc > 7)
         n_workers = atoi(argv[7]);
     if(argc > 8)
-        gen.seed(atoi(argv[8]));
+    {
+        if( strcmp(argv[8], "true") )
+            block_execution = true;
+    }
+    if(argc > 9)
+        gen.seed(atoi(argv[9]));
 
     assert(min_dependencies <= max_dependencies);
     assert(max_dependencies <= n_resources);
     assert(min_task_duration <= max_task_duration);
-    assert(max_dependencies < 6);
+    assert(max_dependencies <= MAX_RESOURCES);
 }
 
 void sleep(std::chrono::microseconds d)

@@ -199,8 +199,8 @@ int main(int argc, char* argv[])
     generate_access_pattern();
 
     SuperGlue<Options> tm( n_workers );
-    std::vector< std::array<uint64_t, 8> > data( n_resources );
-    std::vector< Handle<Options> > resources( n_resources );
+    std::vector< std::array<uint64_t, 8> > data( MAX_RESOURCES );
+    std::vector< Handle<Options> > resources( MAX_RESOURCES );
 
     auto start = high_resolution_clock::now();
  

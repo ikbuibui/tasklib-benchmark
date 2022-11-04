@@ -103,7 +103,7 @@ int main(int argc, char* argv[])
 
     Quark * quark = QUARK_New(n_workers);
 
-    std::vector< std::array<uint64_t, 8> > resources(n_resources);
+    std::vector< std::array<uint64_t, 8> > resources( MAX_RESOURCES );
 
     auto start = high_resolution_clock::now();
 
