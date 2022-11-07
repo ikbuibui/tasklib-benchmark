@@ -3,6 +3,7 @@
 #include "sg/superglue.hpp"
 #include "common.h"
 
+#include <iomanip>
 #include <cblas.h>
 #include <lapacke.h>
 
@@ -142,6 +143,7 @@ int main(int argc, char *argv[]) {
     
     auto end = high_resolution_clock::now();
 
+    std::cout << std::fixed << std::setprecision(6);
     std::cout << "total " << duration_cast<nanoseconds>(end-start).count()/1000000.0 << " ms" << std::endl;
 
     return 0;

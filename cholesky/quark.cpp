@@ -4,7 +4,7 @@
 #include <vector>
 #include <cblas.h>
 #include <lapacke.h>
-
+#include <iomanip>
 #include "quark.h"
 #include "common.h"
 
@@ -113,6 +113,7 @@ int main(int argc, char *argv[]) {
     QUARK_Waitall(quark);
     auto end = high_resolution_clock::now();
 
+    std::cout << std::fixed << std::setprecision(6);
     std::cout << "total " << duration_cast<nanoseconds>(end-start).count()/1000000.0 << " ms" << std::endl;
     
     QUARK_Delete(quark);    
