@@ -1,9 +1,13 @@
 #include <chrono>
 #include <sg/superglue.hpp>
 
+#include <iomanip>
 #include <sys/time.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <condition_variable>
+#include <thread>
+#include <mutex>
 #include "sg/superglue.hpp"
 #include "common.h"
 
@@ -193,15 +197,46 @@ struct MyTask5 : Task<Options, 5> {
     }
 };
 
+
+std::mutex m;
+std::condition_variable cv;
+volatile bool start_flag = false;
+
+struct BlockingTask : Task<Options, 0> {
+    BlockingTask()
+    {
+        
+    }
+
+    void run()
+    {
+        std::unique_lock<std::mutex> l(m);
+        cv.wait(l, [] {
+            return start_flag;
+        });
+    }
+};
+
 int main(int argc, char* argv[])
 {
     read_args(argc, argv);
     generate_access_pattern();
 
     SuperGlue<Options> tm( n_workers );
-    std::vector< std::array<uint64_t, 8> > data( MAX_RESOURCES );
-    std::vector< Handle<Options> > resources( MAX_RESOURCES );
+    std::vector< std::array<uint64_t, 8> > data( n_resources );
+    std::vector< Handle<Options> > resources( n_resources );
 
+    if( block_execution )
+    {
+        // spawn (n_workers - 1) many tasks to block all threads
+        // the main thread is the first worker, so decrement by one
+
+        for( unsigned i = 0; i < n_workers-1; ++i )
+            tm.submit( new BlockingTask() );
+
+        std::this_thread::sleep_for( std::chrono::milliseconds(100) );
+    }
+    
     auto start = high_resolution_clock::now();
  
     for( unsigned i = 0; i < n_tasks; ++i )
@@ -244,7 +279,19 @@ int main(int argc, char* argv[])
         }
 
     auto mid = high_resolution_clock::now();
+    
+    if( block_execution )
+    {
+        // trigger execution of tasks
+        {
+            std::unique_lock<std::mutex> l(m);
+            start_flag = true;
+        }
+        cv.notify_all();
+    }
+
     tm.barrier();
+
     auto end = high_resolution_clock::now();
 
     for(int i = 0; i < n_resources; ++i)
@@ -256,8 +303,10 @@ int main(int argc, char* argv[])
 
     std::cout << "success" << std::endl;
 
+    std::cout << std::fixed << std::setprecision(6);
     std::cout << "total " << duration_cast<nanoseconds>(end-start).count()/1000.0 << " μs" << std::endl;
     std::cout << "emplacement " << duration_cast<nanoseconds>(mid-start).count()/1000.0 << " μs" << std::endl;
+    std::cout << "execution " << duration_cast<nanoseconds>(end-mid).count()/1000.0 << " μs" << std::endl;
     std::cout << "scheduling gap " << duration_cast<nanoseconds>(get_scheduling_gap()).count() / 1000.0 << " μs" << std::endl;
 
     get_critical_path();

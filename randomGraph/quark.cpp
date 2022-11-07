@@ -1,8 +1,10 @@
 #include <chrono>
 #include <vector>
 #include <iostream>
-
-
+#include <mutex>
+#include <condition_variable>
+#include <thread>
+#include <iomanip>
 #include <string.h> // need to include this to compile
 #include "quark.h"
 #include "common.h"
@@ -96,6 +98,21 @@ void myTask5(Quark * quark)
     task_end[task_id] = high_resolution_clock::now();
 }
 
+std::mutex m;
+std::condition_variable cv;
+volatile bool start_flag = false;
+
+void blocking_task(Quark * quark)
+{
+    std::unique_lock<std::mutex> l(m);
+    if( !start_flag )
+    {
+        cv.wait(l, [] {
+            return start_flag;
+        });
+    }
+}
+
 int main(int argc, char* argv[])
 {
     read_args(argc, argv);
@@ -103,8 +120,16 @@ int main(int argc, char* argv[])
 
     Quark * quark = QUARK_New(n_workers);
 
-    std::vector< std::array<uint64_t, 8> > resources( MAX_RESOURCES );
+    std::vector< std::array<uint64_t, 8> > resources( n_resources );
 
+    if( block_execution )
+    {
+        for( unsigned i = 0; i < n_workers-1; ++i )
+            QUARK_Insert_Task( quark, blocking_task, NULL, 0 );
+
+        std::this_thread::sleep_for( std::chrono::milliseconds(100) );
+    }
+    
     auto start = high_resolution_clock::now();
 
     for( unsigned i = 0; i < n_tasks; ++i )
@@ -158,7 +183,19 @@ int main(int argc, char* argv[])
         }
 
     auto mid = high_resolution_clock::now();
+
+    if( block_execution )
+    {
+        // trigger execution of tasks
+        {
+            std::unique_lock<std::mutex> l(m);
+            start_flag = true;
+        }
+        cv.notify_all();
+    }
+
     QUARK_Waitall(quark);
+
     auto end = high_resolution_clock::now();
 
     QUARK_Delete(quark);
@@ -172,8 +209,10 @@ int main(int argc, char* argv[])
 
     std::cout << "success" << std::endl;
 
+    std::cout << std::fixed << std::setprecision(6);
     std::cout << "total " << duration_cast<nanoseconds>(end-start).count()/1000.0 << " μs" << std::endl;
     std::cout << "emplacement " << duration_cast<nanoseconds>(mid-start).count()/1000.0 << " μs" << std::endl;
+    std::cout << "execution " << duration_cast<nanoseconds>(end-mid).count()/1000.0 << " μs" << std::endl;
     std::cout << "scheduling gap " << duration_cast<nanoseconds>(get_scheduling_gap()).count() / 1000.0 << " μs" << std::endl;
 
     get_critical_path();

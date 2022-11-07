@@ -4,6 +4,7 @@
 #include <redGrapes/redGrapes.hpp>
 #include <redGrapes/resource/ioresource.hpp>
 
+#include <iomanip>
 #include <condition_variable>
 
 namespace rg = redGrapes;
@@ -11,30 +12,33 @@ using namespace std::chrono;
 
 std::mutex m;
 std::condition_variable cv;
-bool start_flag = false;
+volatile bool start_flag = false;
 
 int main(int argc, char* argv[])
 {
+    spdlog::set_level( spdlog::level::debug );
+    spdlog::set_pattern("[thread %t] %^[%l]%$ %v");
+
     read_args(argc, argv);
     generate_access_pattern();
 
     rg::init(n_workers);
 
-    std::vector<rg::IOResource<std::array<uint64_t, 8>>> resources( MAX_RESOURCES );
+    std::vector<rg::IOResource<std::array<uint64_t, 8>>> resources( n_resources );
 
     if( block_execution )
     {
-        rg::emplace_task([&cv](auto a, auto b, auto c, auto d, auto e) {
-            std::unique_lock<std::mutex> l(m);
-            cv.wait(l, [] {
-                return start_flag;
+        for( unsigned i = 0; i < n_workers; ++i )
+            rg::emplace_task([&cv]() {
+                std::cout << "blocking task" << std::endl;
+                std::unique_lock<std::mutex> l(m);
+                cv.wait(l, [] {
+                    return start_flag;
+                });
+                std::cout << "blocking task released" << std::endl;    
             });
-        },
-            resources[0].write(),
-            resources[1].write(),
-            resources[2].write(),
-            resources[3].write(),
-            resources[4].write());
+
+        std::this_thread::sleep_for( std::chrono::milliseconds(100) );
     }
 
     auto start = high_resolution_clock::now();
@@ -147,7 +151,7 @@ int main(int argc, char* argv[])
 
     if( block_execution )
     {
-        // trigger execution of tasksw
+        // trigger execution of tasks
         {
             std::unique_lock<std::mutex> l(m);
             start_flag = true;
@@ -171,8 +175,11 @@ int main(int argc, char* argv[])
 
     std::cout << "success" << std::endl;
 
+    
+    std::cout << std::fixed << std::setprecision(6);
     std::cout << "total " << duration_cast<nanoseconds>(end-start).count()/1000.0 << " μs" << std::endl;
     std::cout << "emplacement " << duration_cast<nanoseconds>(mid-start).count()/1000.0 << " μs" << std::endl;
+    std::cout << "execution " << duration_cast<nanoseconds>(end-mid).count()/1000.0 << " μs" << std::endl;
     std::cout << "scheduling gap " << duration_cast<nanoseconds>(get_scheduling_gap()).count() / 1000.0 << " μs" << std::endl;
 
     get_critical_path();

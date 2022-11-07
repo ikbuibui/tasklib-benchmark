@@ -10,8 +10,6 @@
 
 using namespace std::chrono;
 
-#define MAX_RESOURCES 5
-
 microseconds min_task_duration(25);
 microseconds max_task_duration(25);
 unsigned n_resources = 5;
@@ -58,8 +56,10 @@ void read_args(int argc, char* argv[])
         n_workers = atoi(argv[7]);
     if(argc > 8)
     {
-        if( strcmp(argv[8], "true") )
+        if( strcmp(argv[8], "true") == 0 )
             block_execution = true;
+        else
+            block_execution = false;
     }
     if(argc > 9)
         gen.seed(atoi(argv[9]));
@@ -67,7 +67,7 @@ void read_args(int argc, char* argv[])
     assert(min_dependencies <= max_dependencies);
     assert(max_dependencies <= n_resources);
     assert(min_task_duration <= max_task_duration);
-    assert(max_dependencies <= MAX_RESOURCES);
+    assert(max_dependencies <= 5);
 }
 
 void sleep(std::chrono::microseconds d)
