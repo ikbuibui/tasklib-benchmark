@@ -142,6 +142,8 @@ std::chrono::microseconds get_critical_path()
 
     for(int i = 0; i < n_tasks; ++i)
     {
+        task_duration[i] = duration_cast<microseconds>(task_end[i] - task_begin[i]);
+        
         std::chrono::microseconds max_path_length(0);
 
         for( unsigned rid : access_pattern[i] )

@@ -16,7 +16,7 @@ volatile bool start_flag = false;
 
 int main(int argc, char* argv[])
 {
-    spdlog::set_level( spdlog::level::debug );
+    spdlog::set_level( spdlog::level::trace );
     spdlog::set_pattern("[thread %t] %^[%l]%$ %v");
 
     read_args(argc, argv);
@@ -29,13 +29,11 @@ int main(int argc, char* argv[])
     if( block_execution )
     {
         for( unsigned i = 0; i < n_workers; ++i )
-            rg::emplace_task([&cv]() {
-                std::cout << "blocking task" << std::endl;
+            rg::emplace_task([]() {
                 std::unique_lock<std::mutex> l(m);
                 cv.wait(l, [] {
                     return start_flag;
                 });
-                std::cout << "blocking task released" << std::endl;    
             });
 
         std::this_thread::sleep_for( std::chrono::milliseconds(100) );
@@ -62,6 +60,7 @@ int main(int argc, char* argv[])
                 {
                     task_begin[i] = high_resolution_clock::now();
 
+                    //spdlog::info("task {}, res {}", i, access_pattern[i][0]);
                     sleep(task_duration[i]);
                     hash(i, *ra1);
 
@@ -151,6 +150,7 @@ int main(int argc, char* argv[])
 
     if( block_execution )
     {
+        spdlog::info("emplacement done, start executing tasks...");
         // trigger execution of tasks
         {
             std::unique_lock<std::mutex> l(m);

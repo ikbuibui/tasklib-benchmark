@@ -105,12 +105,9 @@ volatile bool start_flag = false;
 void blocking_task(Quark * quark)
 {
     std::unique_lock<std::mutex> l(m);
-    if( !start_flag )
-    {
-        cv.wait(l, [] {
-            return start_flag;
-        });
-    }
+    cv.wait(l, [] {
+        return start_flag;
+    });
 }
 
 int main(int argc, char* argv[])

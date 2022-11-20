@@ -64,8 +64,9 @@ plot()
 {
     OUTPUT="bench_res${n_resources}_dep${min_dependencies}_${max_dependencies}_dur${min_task_duration}_${max_task_duration}_thr${n_workers}.png"
     TITLE="$n_resources resources,\n$min_dependencies - $max_dependencies dependencies per task,\n $min_task_duration - $max_task_duration μs task duration,\n $n_workers threads\nHost: $(cat /etc/hostname)"
-    LABEL_X="number of tasks"
+    LABEL_X="#tasks"
     LABEL_Y="avg runtime overhead per task (μs)"
+    LOGX=1
 
     . ../plot.sh <<< "quark_data Quark #86C4FF #006DD5
 superglue_data SuperGlue #88F176 #20D500
