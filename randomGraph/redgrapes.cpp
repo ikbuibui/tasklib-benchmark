@@ -150,7 +150,7 @@ int main(int argc, char* argv[])
 
     if( block_execution )
     {
-        spdlog::info("emplacement done, start executing tasks...");
+        //spdlog::info("emplacement done, start executing tasks...");
         // trigger execution of tasks
         {
             std::unique_lock<std::mutex> l(m);

@@ -121,10 +121,14 @@ int main(int argc, char* argv[])
 
     if( block_execution )
     {
-        for( unsigned i = 0; i < n_workers-1; ++i )
-            QUARK_Insert_Task( quark, blocking_task, NULL, 0 );
+        for( unsigned i = 1; i < n_workers; ++i )
+        {
+            Quark_Task_Flags tflags = Quark_Task_Flags_Initializer;
+            QUARK_Task_Flag_Set( &tflags, TASK_LOCK_TO_THREAD, i );
+            QUARK_Insert_Task( quark, blocking_task, &tflags, 0 );
+        }
 
-        std::this_thread::sleep_for( std::chrono::milliseconds(100) );
+        std::this_thread::sleep_for( std::chrono::milliseconds(500) );
     }
     
     auto start = high_resolution_clock::now();
@@ -184,6 +188,7 @@ int main(int argc, char* argv[])
     if( block_execution )
     {
         // trigger execution of tasks
+        //std::cout << "emplacement done, start tasks" << std::endl;
         {
             std::unique_lock<std::mutex> l(m);
             start_flag = true;
