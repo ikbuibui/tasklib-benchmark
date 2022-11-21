@@ -2,7 +2,7 @@
 
 n_tasks=8192
 n_resources=10
-n_workers=1
+n_workers=2
 n_repeat=${n_repeat-15}
 
 build()
@@ -16,9 +16,11 @@ build()
 
 run()
 {
+    mkdir -p data/emplacement
+
     for lib in quark redgrapes superglue;
     do
-	truncate -s 0 ${lib}_emplacement_data
+	truncate -s 0 data/emplacement/${lib}
 	for n_deps in 0 1 2 3 4 5;
 	do
 	    DATA=""
@@ -47,21 +49,22 @@ run()
 	    SIG=$(bc -l <<< "sqrt($VAR)")
 
 	    echo "min=$MIN, max=$MAX, avg=$AVG, sigma=$SIG"
-	    echo "$n_deps $AVG $MIN $MAX $SIG" >> ${lib}_emplacement_data
+	    echo "$n_deps $AVG $MIN $MAX $SIG" >> data/emplacement/${lib}
 	done
     done
 }
 
 plot()
 {
-    OUTPUT="bench_emplace.png"
+    mkdir -p plots
+    OUTPUT="plots/emplacement.png"
     TITLE="emplacement time\nHost: $(cat /etc/hostname)"
     LABEL_X="#dependencies"
     LABEL_Y="emplacement overhead per task (μs)"
 
-    . ../plot.sh <<< "quark_emplacement_data Quark #86C4FF #006DD5
-superglue_emplacement_data SuperGlue #88F176 #20D500
-redgrapes_emplacement_data RedGrapes #C976F1 #670496"
+    . ../plot.sh <<< "data/emplacement/quark Quark #86C4FF #006DD5
+data/emplacement/superglue SuperGlue #88F176 #20D500
+data/emplacement/redgrapes RedGrapes #C976F1 #670496"
 }
 
 build

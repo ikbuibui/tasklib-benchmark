@@ -20,9 +20,10 @@ build()
 
 run()
 {
+    mkdir -p data/overhead
     for lib in redgrapes superglue quark;
     do
-	truncate -s 0 ${lib}_data
+	truncate -s 0 data/overhead/${lib}
 	for n_tasks in 1024 2048 4096 8192 16384;
 	do
 	    DATA=""
@@ -55,22 +56,23 @@ run()
 	    SIG=$(bc -l <<< "sqrt($VAR)")
 
 	    echo "min=$MIN, max=$MAX, avg=$AVG, sigma=$SIG"
-	    echo "$n_tasks $AVG $MIN $MAX $SIG" >> ${lib}_data
+	    echo "$n_tasks $AVG $MIN $MAX $SIG" >> data/overhead/${lib}
 	done
     done
 }
 
 plot()
 {
-    OUTPUT="bench_res${n_resources}_dep${min_dependencies}_${max_dependencies}_dur${min_task_duration}_${max_task_duration}_thr${n_workers}.png"
+    mkdir -p plots
+    OUTPUT="plots/overhead_res${n_resources}_dep${min_dependencies}_${max_dependencies}_dur${min_task_duration}_${max_task_duration}_thr${n_workers}.png"
     TITLE="$n_resources resources,\n$min_dependencies - $max_dependencies dependencies per task,\n $min_task_duration - $max_task_duration μs task duration,\n $n_workers threads\nHost: $(cat /etc/hostname)"
     LABEL_X="#tasks"
     LABEL_Y="avg runtime overhead per task (μs)"
     LOGX=1
 
-    . ../plot.sh <<< "quark_data Quark #86C4FF #006DD5
-superglue_data SuperGlue #88F176 #20D500
-redgrapes_data RedGrapes #C976F1 #670496"
+    . ../plot.sh <<< "data/overhead/quark Quark #86C4FF #006DD5
+data/overhead/superglue SuperGlue #88F176 #20D500
+data/overhead/redgrapes RedGrapes #C976F1 #670496"
 }
 
 build
