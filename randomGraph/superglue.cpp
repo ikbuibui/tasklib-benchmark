@@ -27,6 +27,7 @@ struct MyTask0 : Task<Options, 0> {
     {
         task_begin[task_id] = high_resolution_clock::now();
         sleep(task_duration[task_id]);
+        task_thread[task_id] = std::this_thread::get_id();
         task_end[task_id] = high_resolution_clock::now();
     }
 };
@@ -47,6 +48,7 @@ struct MyTask1 : Task<Options, 1> {
         task_begin[task_id] = high_resolution_clock::now();
 
         sleep(task_duration[task_id]);
+        task_thread[task_id] = std::this_thread::get_id();
         hash(task_id, data1);
 
         task_end[task_id] = high_resolution_clock::now();
@@ -74,6 +76,7 @@ struct MyTask2 : Task<Options, 2> {
         task_begin[task_id] = high_resolution_clock::now();
 
         sleep(task_duration[task_id]);
+        task_thread[task_id] = std::this_thread::get_id();
         hash(task_id, data1);
         hash(task_id, data2);
 
@@ -106,6 +109,7 @@ struct MyTask3 : Task<Options, 3> {
         task_begin[task_id] = high_resolution_clock::now();
 
         sleep(task_duration[task_id]);
+        task_thread[task_id] = std::this_thread::get_id();
         hash(task_id, data1);
         hash(task_id, data2);
         hash(task_id, data3);
@@ -144,6 +148,7 @@ struct MyTask4 : Task<Options, 4> {
         task_begin[task_id] = high_resolution_clock::now();
 
         sleep(task_duration[task_id]);
+        task_thread[task_id] = std::this_thread::get_id();
         hash(task_id, data1);
         hash(task_id, data2);
         hash(task_id, data3);
@@ -187,6 +192,7 @@ struct MyTask5 : Task<Options, 5> {
         task_begin[task_id] = high_resolution_clock::now();
 
         sleep(task_duration[task_id]);
+        task_thread[task_id] = std::this_thread::get_id();
         hash(task_id, data1);
         hash(task_id, data2);
         hash(task_id, data3);
@@ -310,7 +316,7 @@ int main(int argc, char* argv[])
     std::cout << "scheduling gap " << duration_cast<nanoseconds>(get_scheduling_gap()).count() / 1000.0 << " μs" << std::endl;
 
     get_critical_path();
-    
+    output_svg(std::ofstream("trace_superglue.svg"));
     return 0;
 }
 

@@ -5,6 +5,7 @@
 #include <redGrapes/resource/ioresource.hpp>
 
 #include <iomanip>
+#include <mutex>
 #include <condition_variable>
 
 namespace rg = redGrapes;
@@ -48,6 +49,7 @@ int main(int argc, char* argv[])
             rg::emplace_task([i]() {
                 task_begin[i] = high_resolution_clock::now();
 
+                task_thread[i] = std::this_thread::get_id();
                 sleep(task_duration[i]);
 
                 task_end[i] = high_resolution_clock::now();
@@ -62,6 +64,7 @@ int main(int argc, char* argv[])
 
                     //spdlog::info("task {}, res {}", i, access_pattern[i][0]);
                     sleep(task_duration[i]);
+                    task_thread[i] = std::this_thread::get_id();
                     hash(i, *ra1);
 
                     task_end[i] = high_resolution_clock::now();
@@ -76,6 +79,7 @@ int main(int argc, char* argv[])
                     task_begin[i] = high_resolution_clock::now();
 
                     sleep(task_duration[i]);
+                    task_thread[i] = std::this_thread::get_id();
                     hash(i, *ra1);
                     hash(i, *ra2);
 
@@ -92,6 +96,7 @@ int main(int argc, char* argv[])
                     task_begin[i] = high_resolution_clock::now();
 
                     sleep(task_duration[i]);
+                    task_thread[i] = std::this_thread::get_id();
                     hash(i, *ra1);
                     hash(i, *ra2);
                     hash(i, *ra3);
@@ -110,6 +115,7 @@ int main(int argc, char* argv[])
                     task_begin[i] = high_resolution_clock::now();
 
                     sleep(task_duration[i]);
+                    task_thread[i] = std::this_thread::get_id();
                     hash(i, *ra1);
                     hash(i, *ra2);
                     hash(i, *ra3);
@@ -130,6 +136,7 @@ int main(int argc, char* argv[])
                     task_begin[i] = high_resolution_clock::now();
 
                     sleep(task_duration[i]);
+                    task_thread[i] = std::this_thread::get_id();
                     hash(i, *ra1);
                     hash(i, *ra2);
                     hash(i, *ra3);
@@ -183,6 +190,8 @@ int main(int argc, char* argv[])
     std::cout << "scheduling gap " << duration_cast<nanoseconds>(get_scheduling_gap()).count() / 1000.0 << " μs" << std::endl;
 
     get_critical_path();
+
+    output_svg(std::ofstream("trace_redgrapes.svg"));
 
     return 0;
 }

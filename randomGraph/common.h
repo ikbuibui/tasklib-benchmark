@@ -2,10 +2,14 @@
 #include <chrono>
 #include <random>
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <vector>
 #include <array>
 #include <algorithm>
 #include <cstring>
+#include <unordered_map>
+#include <thread>
 #include "sha256.c"
 
 using namespace std::chrono;
@@ -24,6 +28,7 @@ std::mt19937 gen;
 std::vector<microseconds> task_duration;
 std::vector<time_point<high_resolution_clock>> task_begin;
 std::vector<time_point<high_resolution_clock>> task_end;
+std::vector<std::thread::id> task_thread;
 
 std::vector<std::vector<unsigned>> access_pattern;
 std::vector<std::array<uint64_t, 8>> expected_hash;
@@ -97,6 +102,7 @@ void generate_access_pattern()
     std::uniform_int_distribution<unsigned> distrib_duration(min_task_duration.count(), max_task_duration.count());
 
     expected_hash = std::vector<std::array<uint64_t, 8>>(n_resources);
+    task_thread = std::vector<std::thread::id>(n_tasks);
 
     task_begin.reserve(n_tasks);
     task_end.reserve(n_tasks);
@@ -176,5 +182,62 @@ nanoseconds get_scheduling_gap()
         sum += duration_cast<nanoseconds>(task_begin[i] - task_end[i - n_resources]);
     }
     return sum / (n_tasks - n_resources);
+}
+
+void output_svg(std::ofstream f)
+{
+    time_point<high_resolution_clock> start = task_begin[0];
+    time_point<high_resolution_clock> end = task_end[0];
+    for(unsigned i = 0; i < n_tasks; ++i)
+    {
+        if( task_begin[i] < start )
+            start = task_begin[i];
+
+        if( task_end[i] > end )
+            end = task_end[i];
+    }
+
+    unsigned th = 20;
+
+    unsigned width = 2 * duration_cast<microseconds>(end - start).count();
+    unsigned height = n_resources * th;
+
+    std::vector<std::string> resource_colors;
+    std::uniform_int_distribution<unsigned> col_dist(30, 255);
+    for(unsigned i = 0; i < n_resources; ++i)
+    {
+        unsigned r = col_dist(gen);
+        unsigned g = col_dist(gen);
+        unsigned b = col_dist(gen);
+
+        std::stringstream colstring;
+        colstring << std::hex << r << g << b;
+        resource_colors.push_back(colstring.str());
+    }
+
+    f << "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>" << std::endl;
+    f << "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">" << std::endl;
+    f << "<svg width=\"" << width << "\" height=\"" << height << "\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">" << std::endl;
+
+    // background
+    f << "<rect fill=\"#fff\" stroke=\"#000\" x=\"0\" y=\"0\" width=\""<<width<<"\" height=\""<<height<<"\"/>" << std::endl;
+
+    std::unordered_map<std::thread::id, unsigned> tids;
+    unsigned next_tid = 0;
+    
+    for(unsigned i = 0; i < n_tasks; ++i)
+    {
+        if( tids.count( task_thread[i] ) == 0 )
+            tids.emplace( task_thread[i], next_tid++ );
+
+        unsigned tid = tids[task_thread[i]];
+
+        unsigned x = 2 * duration_cast<microseconds>(task_begin[i] - start).count();
+        unsigned w = 2 * duration_cast<microseconds>(task_end[i] - task_begin[i]).count();
+        f << "<rect fill=\"#" << resource_colors[i % n_resources] << "\" stroke=\"#000\" x=\""<<x<<"\" y=\""<<(th * tid)<<"\" width=\""<<w<<"\" height=\""<<th<<"\"/>" << std::endl;        
+    }
+
+    
+    f << "</svg>" << std::endl;
 }
 

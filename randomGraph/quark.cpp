@@ -17,8 +17,8 @@ void myTask0(Quark * quark)
     quark_unpack_args_1( quark, task_id );
 
     task_begin[task_id] = high_resolution_clock::now();
-
     sleep(task_duration[task_id]);
+    task_thread[task_id] = std::this_thread::get_id();
 
     task_end[task_id] = high_resolution_clock::now();
 }
@@ -31,6 +31,7 @@ void myTask1(Quark * quark)
     task_begin[task_id] = high_resolution_clock::now();
 
     sleep(task_duration[task_id]);
+    task_thread[task_id] = std::this_thread::get_id();
     hash(task_id, *data1);
 
     task_end[task_id] = high_resolution_clock::now();
@@ -44,6 +45,7 @@ void myTask2(Quark * quark)
     task_begin[task_id] = high_resolution_clock::now();
 
     sleep(task_duration[task_id]);
+    task_thread[task_id] = std::this_thread::get_id();
     hash(task_id, *data1);
     hash(task_id, *data2);
 
@@ -58,6 +60,7 @@ void myTask3(Quark * quark)
     task_begin[task_id] = high_resolution_clock::now();
 
     sleep(task_duration[task_id]);
+    task_thread[task_id] = std::this_thread::get_id();
     hash(task_id, *data1);
     hash(task_id, *data2);
     hash(task_id, *data3);
@@ -73,6 +76,7 @@ void myTask4(Quark * quark)
     task_begin[task_id] = high_resolution_clock::now();
     
     sleep(task_duration[task_id]);
+    task_thread[task_id] = std::this_thread::get_id();
     hash(task_id, *data1);
     hash(task_id, *data2);
     hash(task_id, *data3);
@@ -89,6 +93,7 @@ void myTask5(Quark * quark)
     task_begin[task_id] = high_resolution_clock::now();
 
     sleep(task_duration[task_id]);
+    task_thread[task_id] = std::this_thread::get_id();
     hash(task_id, *data1);
     hash(task_id, *data2);
     hash(task_id, *data3);
@@ -218,7 +223,7 @@ int main(int argc, char* argv[])
     std::cout << "scheduling gap " << duration_cast<nanoseconds>(get_scheduling_gap()).count() / 1000.0 << " μs" << std::endl;
 
     get_critical_path();
-    
+    output_svg(std::ofstream("trace_quark.svg"));
     return 0;
 }
 
