@@ -24,11 +24,13 @@ void myTask0(Quark * quark)
 }
 void myTask1(Quark * quark)
 {
+    auto begin = high_resolution_clock::now();
+
     unsigned task_id;
     std::array<uint64_t, 8> *data1;
     quark_unpack_args_2( quark, task_id, data1 );
 
-    task_begin[task_id] = high_resolution_clock::now();
+    task_begin[task_id] = begin;
 
     sleep(task_duration[task_id]);
     task_thread[task_id] = std::this_thread::get_id();
@@ -109,10 +111,21 @@ volatile bool start_flag = false;
 
 void blocking_task(Quark * quark)
 {
+    unsigned i;
+    quark_unpack_args_1( quark, i );
+
+    wait_task_begin[i] = high_resolution_clock::now();
+    wait_task_thread[i] = std::this_thread::get_id();
+
+    /*
     std::unique_lock<std::mutex> l(m);
     cv.wait(l, [] {
         return start_flag;
     });
+    */
+    while( !start_flag );
+
+    wait_task_end[i] = high_resolution_clock::now();
 }
 
 int main(int argc, char* argv[])
@@ -126,11 +139,13 @@ int main(int argc, char* argv[])
 
     if( block_execution )
     {
-        for( unsigned i = 1; i < n_workers; ++i )
+        for( unsigned i = 0; i < n_workers; ++i )
         {
             Quark_Task_Flags tflags = Quark_Task_Flags_Initializer;
             QUARK_Task_Flag_Set( &tflags, TASK_LOCK_TO_THREAD, i );
-            QUARK_Insert_Task( quark, blocking_task, &tflags, 0 );
+            QUARK_Insert_Task(quark, blocking_task, &tflags,
+                              sizeof(unsigned), &i, VALUE,
+                              0);
         }
 
         std::this_thread::sleep_for( std::chrono::milliseconds(500) );
@@ -195,10 +210,10 @@ int main(int argc, char* argv[])
         // trigger execution of tasks
         //std::cout << "emplacement done, start tasks" << std::endl;
         {
-            std::unique_lock<std::mutex> l(m);
+            //std::unique_lock<std::mutex> l(m);
             start_flag = true;
         }
-        cv.notify_all();
+        //cv.notify_all();
     }
 
     QUARK_Waitall(quark);

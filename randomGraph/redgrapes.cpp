@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <redGrapes/redGrapes.hpp>
 #include <redGrapes/resource/ioresource.hpp>
+#include <redGrapes/scheduler/default_scheduler.hpp>
 
 #include <iomanip>
 #include <mutex>
@@ -26,18 +27,19 @@ int main(int argc, char* argv[])
     rg::init(n_workers);
 
     std::vector<rg::IOResource<std::array<uint64_t, 8>>> resources( n_resources );
-
+    
     if( block_execution )
     {
         for( unsigned i = 0; i < n_workers; ++i )
-            rg::emplace_task([]() {
-                std::unique_lock<std::mutex> l(m);
-                cv.wait(l, [] {
-                    return start_flag;
-                });
+            rg::emplace_task([i]() {
+                wait_task_thread[i] = std::this_thread::get_id();
+
+                while( ! start_flag );
+
+                wait_task_end[i] = high_resolution_clock::now();
             });
 
-        std::this_thread::sleep_for( std::chrono::milliseconds(100) );
+        std::this_thread::sleep_for( std::chrono::milliseconds(500) );
     }
 
     auto start = high_resolution_clock::now();
@@ -157,13 +159,11 @@ int main(int argc, char* argv[])
 
     if( block_execution )
     {
-        //spdlog::info("emplacement done, start executing tasks...");
+        //spdlog::info("+++ emplacement done, start executing tasks...");
         // trigger execution of tasks
-        {
-            std::unique_lock<std::mutex> l(m);
-            start_flag = true;
-        }
-        cv.notify_all();
+        auto s  = dynamic_cast<redGrapes::scheduler::DefaultScheduler*>(redGrapes::top_scheduler.get())->ready.cq.size_approx();
+        spdlog::info("ready queue size {}", s);
+        start_flag = true;
     }
 
     // wait for execution to finish
@@ -181,7 +181,6 @@ int main(int argc, char* argv[])
         }
 
     std::cout << "success" << std::endl;
-
     
     std::cout << std::fixed << std::setprecision(6);
     std::cout << "total " << duration_cast<nanoseconds>(end-start).count()/1000.0 << " μs" << std::endl;

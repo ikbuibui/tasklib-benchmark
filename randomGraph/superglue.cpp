@@ -209,17 +209,26 @@ std::condition_variable cv;
 volatile bool start_flag = false;
 
 struct BlockingTask : Task<Options, 0> {
-    BlockingTask()
+    unsigned i;
+    BlockingTask(unsigned i)
+        : i(i)
     {
         
     }
 
     void run()
     {
+        wait_task_begin[i] = high_resolution_clock::now();
+        wait_task_thread[i] = std::this_thread::get_id();
+        /*
         std::unique_lock<std::mutex> l(m);
         cv.wait(l, [] {
             return start_flag;
         });
+        */
+        while( ! start_flag );
+
+        wait_task_end[i] = high_resolution_clock::now();
     }
 };
 
@@ -237,8 +246,8 @@ int main(int argc, char* argv[])
         // spawn (n_workers - 1) many tasks to block all threads
         // the main thread is the first worker, so decrement by one
 
-        for( unsigned i = 0; i < n_workers-1; ++i )
-            tm.submit( new BlockingTask() );
+        for( unsigned i = 0; i < n_workers; ++i )
+            tm.submit( new BlockingTask(i) );
 
         std::this_thread::sleep_for( std::chrono::milliseconds(100) );
     }
@@ -290,10 +299,10 @@ int main(int argc, char* argv[])
     {
         // trigger execution of tasks
         {
-            std::unique_lock<std::mutex> l(m);
+            //std::unique_lock<std::mutex> l(m);
             start_flag = true;
         }
-        cv.notify_all();
+        //cv.notify_all();
     }
 
     tm.barrier();

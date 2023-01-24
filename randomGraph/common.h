@@ -10,6 +10,7 @@
 #include <cstring>
 #include <unordered_map>
 #include <thread>
+#include <unistd.h>
 #include "sha256.c"
 
 using namespace std::chrono;
@@ -29,6 +30,10 @@ std::vector<microseconds> task_duration;
 std::vector<time_point<high_resolution_clock>> task_begin;
 std::vector<time_point<high_resolution_clock>> task_end;
 std::vector<std::thread::id> task_thread;
+
+std::vector<time_point<high_resolution_clock>> wait_task_begin;
+std::vector<time_point<high_resolution_clock>> wait_task_end;
+std::vector<std::thread::id> wait_task_thread;
 
 std::vector<std::vector<unsigned>> access_pattern;
 std::vector<std::array<uint64_t, 8>> expected_hash;
@@ -80,6 +85,7 @@ void sleep(std::chrono::microseconds d)
     auto end = std::chrono::high_resolution_clock::now() + d;
     while(std::chrono::high_resolution_clock::now() < end)
         ;
+//    usleep(d.count());
 }
 
 void hash(unsigned task_id,
@@ -103,6 +109,10 @@ void generate_access_pattern()
 
     expected_hash = std::vector<std::array<uint64_t, 8>>(n_resources);
     task_thread = std::vector<std::thread::id>(n_tasks);
+
+    wait_task_begin = std::vector<time_point<high_resolution_clock>>(n_workers);
+    wait_task_end = std::vector<time_point<high_resolution_clock>>(n_workers);
+    wait_task_thread = std::vector<std::thread::id>(n_workers);
 
     task_begin.reserve(n_tasks);
     task_end.reserve(n_tasks);
@@ -184,31 +194,96 @@ nanoseconds get_scheduling_gap()
     return sum / (n_tasks - n_resources);
 }
 
+void HSVtoRGB(float& fR, float& fG, float& fB, float& fH, float& fS, float& fV) {
+  float fC = fV * fS; // Chroma
+  float fHPrime = fmod(fH / 60.0, 6);
+  float fX = fC * (1 - fabs(fmod(fHPrime, 2) - 1));
+  float fM = fV - fC;
+  
+  if(0 <= fHPrime && fHPrime < 1) {
+    fR = fC;
+    fG = fX;
+    fB = 0;
+  } else if(1 <= fHPrime && fHPrime < 2) {
+    fR = fX;
+    fG = fC;
+    fB = 0;
+  } else if(2 <= fHPrime && fHPrime < 3) {
+    fR = 0;
+    fG = fC;
+    fB = fX;
+  } else if(3 <= fHPrime && fHPrime < 4) {
+    fR = 0;
+    fG = fX;
+    fB = fC;
+  } else if(4 <= fHPrime && fHPrime < 5) {
+    fR = fX;
+    fG = 0;
+    fB = fC;
+  } else if(5 <= fHPrime && fHPrime < 6) {
+    fR = fC;
+    fG = 0;
+    fB = fX;
+  } else {
+    fR = 0;
+    fG = 0;
+    fB = 0;
+  }
+  
+  fR += fM;
+  fG += fM;
+  fB += fM;
+}
+
 void output_svg(std::ofstream f)
 {
-    time_point<high_resolution_clock> start = task_begin[0];
+    time_point<high_resolution_clock> start = wait_task_end[0];
     time_point<high_resolution_clock> end = task_end[0];
+
+    if( block_execution )
+    {
+        for(unsigned i = 0; i < n_workers; ++i)
+        {
+            if( wait_task_end[i] < start )
+                start = wait_task_end[i];
+        }
+    }
+    else
+    {
+        start = task_begin[0];
+        for(unsigned i = 0; i < n_tasks; ++i)
+        {
+            if( task_begin[i] < start )
+                start = task_begin[i];
+        }
+    }
+    
     for(unsigned i = 0; i < n_tasks; ++i)
     {
-        if( task_begin[i] < start )
-            start = task_begin[i];
-
         if( task_end[i] > end )
             end = task_end[i];
     }
 
     unsigned th = 20;
 
-    unsigned width = 2 * duration_cast<microseconds>(end - start).count();
+    unsigned width = duration_cast<microseconds>(end - start).count() + 1;
     unsigned height = n_resources * th;
 
     std::vector<std::string> resource_colors;
     std::uniform_int_distribution<unsigned> col_dist(30, 255);
     for(unsigned i = 0; i < n_resources; ++i)
     {
-        unsigned r = col_dist(gen);
-        unsigned g = col_dist(gen);
-        unsigned b = col_dist(gen);
+        float H,S,V;
+
+        H=(360.0 * float(i) / float(n_resources));
+        if( i % 2 == 0 ) S =0.8; else S=0.3;
+        if( i % 3 == 0 ) V =0.5; else V=0.8;
+
+        float R,G,B;
+        HSVtoRGB(R,G,B,H,S,V);
+        unsigned r = (R * 255.0);
+        unsigned g = (G * 255.0);
+        unsigned b = (B * 255.0);
 
         std::stringstream colstring;
         colstring << std::hex << r << g << b;
@@ -224,7 +299,20 @@ void output_svg(std::ofstream f)
 
     std::unordered_map<std::thread::id, unsigned> tids;
     unsigned next_tid = 0;
-    
+
+    if( block_execution )
+    {
+        for(unsigned i = 0; i < n_workers; ++i)
+        {
+            if( tids.count( wait_task_thread[i] ) == 0 )
+                tids.emplace( wait_task_thread[i], next_tid++ );
+
+            unsigned tid = tids[wait_task_thread[i]];
+            unsigned w = duration_cast<microseconds>(wait_task_end[i] - start).count();
+            f << "<rect fill=\"#f00\" stroke=\"#000\" x=\"0\" y=\""<<(th * tid)<<"\" width=\""<<w<<"\" height=\""<<th<<"\"/>" << std::endl;        
+        }
+    }
+
     for(unsigned i = 0; i < n_tasks; ++i)
     {
         if( tids.count( task_thread[i] ) == 0 )
@@ -232,12 +320,15 @@ void output_svg(std::ofstream f)
 
         unsigned tid = tids[task_thread[i]];
 
-        unsigned x = 2 * duration_cast<microseconds>(task_begin[i] - start).count();
-        unsigned w = 2 * duration_cast<microseconds>(task_end[i] - task_begin[i]).count();
+        unsigned x = duration_cast<microseconds>(task_begin[i] - start).count();
+        unsigned w = duration_cast<microseconds>(task_end[i] - task_begin[i]).count();
         f << "<rect fill=\"#" << resource_colors[i % n_resources] << "\" stroke=\"#000\" x=\""<<x<<"\" y=\""<<(th * tid)<<"\" width=\""<<w<<"\" height=\""<<th<<"\"/>" << std::endl;        
     }
 
     
     f << "</svg>" << std::endl;
 }
+
+
+
 
