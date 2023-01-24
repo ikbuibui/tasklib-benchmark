@@ -1,11 +1,11 @@
 #!/bin/sh
 
-n_resources=${n_resources-0}
-min_dependencies=${min_dependencies-0}
-max_dependencies=${max_dependencies-0}
-min_task_duration=${min_task_duration-5}
-max_task_duration=${max_task_duration-5}
-n_workers=${n_workers-8}
+n_resources=${n_resources-64}
+min_dependencies=${min_dependencies-1}
+max_dependencies=${max_dependencies-5}
+min_task_duration=${min_task_duration-128}
+max_task_duration=${max_task_duration-512}
+n_workers=${n_workers-64}
 block_exec=${block_exec-"false"}
 n_repeat=${n_repeat-15}
 
@@ -65,7 +65,7 @@ plot()
 {
     mkdir -p plots
     OUTPUT="plots/overhead_res${n_resources}_dep${min_dependencies}_${max_dependencies}_dur${min_task_duration}_${max_task_duration}_thr${n_workers}.png"
-    TITLE="$n_resources resources,\n$min_dependencies - $max_dependencies dependencies per task,\n $min_task_duration - $max_task_duration μs task duration,\n $n_workers threads\nHost: $(cat /etc/hostname)"
+    TITLE="$n_workers workers,\\\n${n_resources} resources,\\\n${min_dependencies} - ${max_dependencies} dependencies per task,\\\n ${min_task_duration} - ${max_task_duration} μs task duration,\\\n Host: $(cat /etc/hostname)"
     LABEL_X="#tasks"
     LABEL_Y="avg runtime overhead per task (μs)"
     LOGX=1

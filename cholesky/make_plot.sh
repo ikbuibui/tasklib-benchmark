@@ -1,8 +1,8 @@
 #!/bin/sh
 
 n_repeat=${n_repeat-5}
-n_workers=${n_workers-8}
-matrix_size=${matrix_size-4096}
+n_workers=${n_workers-64}
+matrix_size=${matrix_size-8192}
 
 build()
 {
@@ -18,7 +18,7 @@ run()
     for lib in redgrapes superglue quark;
     do
 	truncate -s 0 ${lib}_data
-	for nblks in 4 8 16 32 64 128;
+	for nblks in 4 8 16 32 64;
 	do
 	    DATA=""
 
@@ -27,8 +27,9 @@ run()
 	    for i in $(seq $n_repeat);
 	    do
 		echo $lib $blksz $nblks $n_workers
-		OUTPUT=$(numactl -C 0-$(( n_workers )) ./build/$lib $blksz $nblks $n_workers)
+		OUTPUT=$(./build/$lib $blksz $nblks $n_workers || exit)
 		TOTAL=$(echo $OUTPUT | grep -Po 'total \K[0-9.]*')
+		echo $TOTAL
 		DATA="$TOTAL $DATA"
 	    done
 
@@ -36,7 +37,7 @@ run()
 	    MIN=$(awk '{min = $1; for(i=1;i<=NF;i++) { if($i < min) { min = $i } } } END { printf "%f\n", min }' <<< $DATA)
 	    MAX=$(awk '{max = $1; for(i=1;i<=NF;i++) { if($i > max) { max = $i } } } END { printf "%f\n", max }' <<< $DATA)
 	    AVG=$(awk '{sum = 0; for(i=1;i<=NF;i++) { sum += $i } } END { printf "%f\n", sum/NF }' <<< $DATA)
-	    VAR=$(awk "{ varsum = 0; for(i=1;i<=NF;i++) { varsum += (\$i-$AVG)*(\$i-$AVG); } } END { printf \"%f\n\", varsum/NF }" <<< $DATA)
+	    VAR=$(awk "{ varsum = 0; for(i=1;i<=NF;i++) { varsum += (\$i - ${AVG} )*(\$i - ${AVG} ); } } END { printf \"%f\n\", varsum/NF }" <<< $DATA)
 	    SIG=$(bc -l <<< "sqrt($VAR)")
 
 	    echo "min=$MIN, max=$MAX, avg=$AVG, sigma=$SIG"

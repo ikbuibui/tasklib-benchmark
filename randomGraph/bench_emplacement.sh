@@ -58,7 +58,7 @@ plot()
 {
     mkdir -p plots
     OUTPUT="plots/emplacement.png"
-    TITLE="emplacement time\nHost: $(cat /etc/hostname)"
+    TITLE="emplacement time,\\\n Host: $(cat /etc/hostname)"
     LABEL_X="#dependencies"
     LABEL_Y="emplacement overhead per task (μs)"
 

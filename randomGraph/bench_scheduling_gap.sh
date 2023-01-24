@@ -1,6 +1,6 @@
 #!/bin/sh
 
-n_workers=${n_workers-4}
+n_workers=${n_workers-64}
 min_task_duration=${min_task_duration-0}
 max_task_duration=${max_task_duration-0}
 n_resources=$n_workers
@@ -57,7 +57,7 @@ plot()
     mkdir -p plots
 
     OUTPUT="plots/scheduling_gap_dur${min_task_duration}_${max_task_duration}_w${n_workers}.png"
-    TITLE="${n_resources} chains, ${n_workers} workers\n $min_task_duration - $max_task_duration μs task duration,\nHost: $(cat /etc/hostname)"
+    TITLE="${n_resources} chains,\\\n ${n_workers} workers,\\\n ${min_task_duration} - ${max_task_duration} μs task duration,\\\n Host: $(cat /etc/hostname)"
     LABEL_X="#tasks"
     LABEL_Y="avg scheduling gap (μs)"
     LOGX=1
