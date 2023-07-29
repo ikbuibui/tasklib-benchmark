@@ -29,11 +29,19 @@ std::mt19937 gen;
 std::vector<microseconds> task_duration;
 std::vector<time_point<high_resolution_clock>> task_begin;
 std::vector<time_point<high_resolution_clock>> task_end;
+#ifdef REDGRAPES
+std::vector<unsigned> task_worker;
+#else
 std::vector<std::thread::id> task_thread;
+#endif
 
 std::vector<time_point<high_resolution_clock>> wait_task_begin;
 std::vector<time_point<high_resolution_clock>> wait_task_end;
+#ifdef REDGRAPES
+std::vector<unsigned> wait_task_worker;
+#else
 std::vector<std::thread::id> wait_task_thread;
+#endif
 
 std::vector<std::vector<unsigned>> access_pattern;
 std::vector<std::array<uint64_t, 8>> expected_hash;
@@ -108,11 +116,21 @@ void generate_access_pattern()
     std::uniform_int_distribution<unsigned> distrib_duration(min_task_duration.count(), max_task_duration.count());
 
     expected_hash = std::vector<std::array<uint64_t, 8>>(n_resources);
+
+    #ifdef REDGRAPES
+    task_worker = std::vector<unsigned>(n_tasks);
+    #else
     task_thread = std::vector<std::thread::id>(n_tasks);
+    #endif
 
     wait_task_begin = std::vector<time_point<high_resolution_clock>>(n_workers);
     wait_task_end = std::vector<time_point<high_resolution_clock>>(n_workers);
+
+#ifdef REDGRAPES
+    wait_task_worker = std::vector<unsigned>(n_workers);
+    #else
     wait_task_thread = std::vector<std::thread::id>(n_workers);
+    #endif
 
     task_begin.reserve(n_tasks);
     task_end.reserve(n_tasks);
@@ -267,7 +285,7 @@ void output_svg(std::ofstream f)
     unsigned th = 20;
 
     unsigned width = duration_cast<microseconds>(end - start).count() + 1;
-    unsigned height = n_resources * th;
+    unsigned height = n_workers * th;
 
     std::vector<std::string> resource_colors;
     std::uniform_int_distribution<unsigned> col_dist(30, 255);
@@ -304,10 +322,15 @@ void output_svg(std::ofstream f)
     {
         for(unsigned i = 0; i < n_workers; ++i)
         {
+            #ifdef REDGRAPES
+            unsigned tid = wait_task_worker[i];
+            #else
             if( tids.count( wait_task_thread[i] ) == 0 )
                 tids.emplace( wait_task_thread[i], next_tid++ );
 
             unsigned tid = tids[wait_task_thread[i]];
+            #endif
+
             unsigned w = duration_cast<microseconds>(wait_task_end[i] - start).count();
             f << "<rect fill=\"#f00\" stroke=\"#000\" x=\"0\" y=\""<<(th * tid)<<"\" width=\""<<w<<"\" height=\""<<th<<"\"/>" << std::endl;        
         }
@@ -315,10 +338,14 @@ void output_svg(std::ofstream f)
 
     for(unsigned i = 0; i < n_tasks; ++i)
     {
+        #ifdef REDGRAPES
+        unsigned tid = task_worker[i];
+        #else
         if( tids.count( task_thread[i] ) == 0 )
             tids.emplace( task_thread[i], next_tid++ );
 
         unsigned tid = tids[task_thread[i]];
+        #endif
 
         unsigned x = duration_cast<microseconds>(task_begin[i] - start).count();
         unsigned w = duration_cast<microseconds>(task_end[i] - task_begin[i]).count();
