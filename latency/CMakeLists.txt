@@ -9,14 +9,14 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_OFF")
 find_package(redGrapes REQUIRED)
 #find_package(hwloc REQUIRED)
 
-add_executable(redgrapes redgrapes.cpp)
+add_executable(redgrapes src/redgrapes.cpp)
 target_link_libraries(redgrapes redGrapes)
 
-add_executable(superglue superglue.cpp)
+add_executable(superglue src/superglue.cpp)
 target_include_directories(superglue PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../thirdparty/superglue/include")
 target_link_libraries(superglue pthread)
 
-add_executable(quark quark.cpp)
+add_executable(quark src/quark.cpp)
 target_include_directories(quark PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../thirdparty/quark-0.9.0/install/include")
 target_link_libraries(quark "${CMAKE_CURRENT_LIST_DIR}/../thirdparty/quark-0.9.0/install/lib/libquark.a")
 #target_link_directories(quark "${CMAKE_CURRENT_LIST_DIR}/../thirdparty/hwloc-2.7.1/install/lib")

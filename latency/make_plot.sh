@@ -18,7 +18,8 @@ do
     i=$((i + 1))
 done
 
-OUTPUT="bench_latency.png"
+mkdir -p plots
+OUTPUT="plots/bench_latency.png"
 
 gnuplot -p \
    -e "set output \"${OUTPUT}\"" \

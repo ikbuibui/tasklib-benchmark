@@ -21,7 +21,7 @@ run()
     for lib in quark redgrapes superglue;
     do
 	truncate -s 0 data/schedulingGap/${lib}
-	for n_tasks in 1024 2048 4096 8192;
+	for n_tasks in 1024 2048 4096 8192
 	do
 	    DATA=""
 	    ARGS="$n_tasks $n_resources 1 1 $min_task_duration $max_task_duration $n_workers true"
