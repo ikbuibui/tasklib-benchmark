@@ -14,12 +14,14 @@ target_link_libraries(redgrapes redGrapes)
 
 add_executable(superglue superglue.cpp)
 target_include_directories(superglue PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../thirdparty/superglue/include")
+#target_link_directories(superglue "${CMAKE_CURRENT_LIST_DIR}/../thirdparty/hwloc_install/lib")
 target_link_libraries(superglue pthread)
+#target_link_libraries(superglue hwloc)
 
 add_executable(quark quark.cpp)
 target_include_directories(quark PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../thirdparty/quark-0.9.0/install/include")
 target_link_libraries(quark "${CMAKE_CURRENT_LIST_DIR}/../thirdparty/quark-0.9.0/install/lib/libquark.a")
-#target_link_directories(quark "${CMAKE_CURRENT_LIST_DIR}/../thirdparty/hwloc-2.7.1/install/lib")
+target_link_directories(quark PRIVATE "/home/sippel17/tlc/tasklib-comparison/thirdparty/hwloc_install/lib")
 target_link_libraries(quark hwloc)
 target_link_libraries(quark pthread)
 
