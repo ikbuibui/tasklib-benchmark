@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
 
                 while( ! start_flag );
 
-                wait_task_end[i] = high_resolution_clock::now();
+                wait_task_end[i] = steady_clock::now();
             });
 
         std::this_thread::sleep_for( std::chrono::milliseconds(500) );
@@ -54,12 +54,12 @@ int main(int argc, char* argv[])
         {
         case 0:
             rg::emplace_task([i]() {
-                task_begin[i] = high_resolution_clock::now();
+                task_begin[i] = steady_clock::now();
 
                 task_worker[i] = redGrapes::dispatch::thread::current_worker->get_worker_id();
                 sleep(task_duration[i]);
 
-                task_end[i] = high_resolution_clock::now();
+                task_end[i] = steady_clock::now();
             });
             break;
 
@@ -67,14 +67,14 @@ int main(int argc, char* argv[])
             rg::emplace_task(
                 [i](auto ra1)
                 {
-                    task_begin[i] = high_resolution_clock::now();
+                    task_begin[i] = steady_clock::now();
 
                     //spdlog::info("task {}, res {}", i, access_pattern[i][0]);
                     sleep(task_duration[i]);
                     task_worker[i] = redGrapes::dispatch::thread::current_worker->get_worker_id();
                     hash(i, *ra1);
 
-                    task_end[i] = high_resolution_clock::now();
+                    task_end[i] = steady_clock::now();
                 },
                 resources[access_pattern[i][0]].write());
             break;
@@ -83,14 +83,14 @@ int main(int argc, char* argv[])
             rg::emplace_task(
                 [i](auto ra1, auto ra2)
                 {
-                    task_begin[i] = high_resolution_clock::now();
+                    task_begin[i] = steady_clock::now();
 
                     sleep(task_duration[i]);
                     task_worker[i] = redGrapes::dispatch::thread::current_worker->get_worker_id();
                     hash(i, *ra1);
                     hash(i, *ra2);
 
-                    task_end[i] = high_resolution_clock::now();
+                    task_end[i] = steady_clock::now();
                 },
                 resources[access_pattern[i][0]].write(),
                 resources[access_pattern[i][1]].write());
@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
             rg::emplace_task(
                 [i](auto ra1, auto ra2, auto ra3)
                 {
-                    task_begin[i] = high_resolution_clock::now();
+                    task_begin[i] = steady_clock::now();
 
                     sleep(task_duration[i]);
                     task_worker[i] = redGrapes::dispatch::thread::current_worker->get_worker_id();
@@ -108,7 +108,7 @@ int main(int argc, char* argv[])
                     hash(i, *ra2);
                     hash(i, *ra3);
 
-                    task_end[i] = high_resolution_clock::now();
+                    task_end[i] = steady_clock::now();
                 },
                 resources[access_pattern[i][0]].write(),
                 resources[access_pattern[i][1]].write(),
@@ -119,7 +119,7 @@ int main(int argc, char* argv[])
             rg::emplace_task(
                 [i](auto ra1, auto ra2, auto ra3, auto ra4)
                 {
-                    task_begin[i] = high_resolution_clock::now();
+                    task_begin[i] = steady_clock::now();
 
                     sleep(task_duration[i]);
                     task_worker[i] = redGrapes::dispatch::thread::current_worker->get_worker_id();
@@ -129,7 +129,7 @@ int main(int argc, char* argv[])
                     hash(i, *ra3);
                     hash(i, *ra4);
 
-                    task_end[i] = high_resolution_clock::now();
+                    task_end[i] = steady_clock::now();
                 },
                 resources[access_pattern[i][0]].write(),
                 resources[access_pattern[i][1]].write(),
@@ -141,7 +141,7 @@ int main(int argc, char* argv[])
             rg::emplace_task(
                 [i](auto ra1, auto ra2, auto ra3, auto ra4, auto ra5)
                 {
-                    task_begin[i] = high_resolution_clock::now();
+                    task_begin[i] = steady_clock::now();
 
                     sleep(task_duration[i]);
                     task_worker[i] = redGrapes::dispatch::thread::current_worker->get_worker_id();
@@ -152,7 +152,7 @@ int main(int argc, char* argv[])
                     hash(i, *ra4);
                     hash(i, *ra5);
 
-                    task_end[i] = high_resolution_clock::now();
+                    task_end[i] = steady_clock::now();
                 },
                 resources[access_pattern[i][0]].write(),
                 resources[access_pattern[i][1]].write(),
@@ -162,7 +162,7 @@ int main(int argc, char* argv[])
             break;
         }
 
-    auto mid = high_resolution_clock::now();
+    auto mid = steady_clock::now();
 
     if( block_execution )
     {
@@ -174,7 +174,7 @@ int main(int argc, char* argv[])
     // wait for execution to finish
     rg::barrier();
 
-    auto end = high_resolution_clock::now();
+    auto end = steady_clock::now();
 
     rg::finalize();
 

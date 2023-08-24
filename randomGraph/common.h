@@ -27,16 +27,16 @@ bool block_execution = false;
 std::mt19937 gen;
 
 std::vector<microseconds> task_duration;
-std::vector<time_point<high_resolution_clock>> task_begin;
-std::vector<time_point<high_resolution_clock>> task_end;
+std::vector<time_point<steady_clock>> task_begin;
+std::vector<time_point<steady_clock>> task_end;
 #ifdef REDGRAPES
 std::vector<unsigned> task_worker;
 #else
 std::vector<std::thread::id> task_thread;
 #endif
 
-std::vector<time_point<high_resolution_clock>> wait_task_begin;
-std::vector<time_point<high_resolution_clock>> wait_task_end;
+std::vector<time_point<steady_clock>> wait_task_begin;
+std::vector<time_point<steady_clock>> wait_task_end;
 #ifdef REDGRAPES
 std::vector<unsigned> wait_task_worker;
 #else
@@ -90,8 +90,8 @@ void read_args(int argc, char* argv[])
 
 void sleep(std::chrono::microseconds d)
 {
-    auto end = std::chrono::high_resolution_clock::now() + d;
-    while(std::chrono::high_resolution_clock::now() < end)
+    auto end = std::chrono::steady_clock::now() + d;
+    while(std::chrono::steady_clock::now() < end)
         ;
 //    usleep(d.count());
 }
@@ -123,8 +123,8 @@ void generate_access_pattern()
     task_thread = std::vector<std::thread::id>(n_tasks);
     #endif
 
-    wait_task_begin = std::vector<time_point<high_resolution_clock>>(n_workers);
-    wait_task_end = std::vector<time_point<high_resolution_clock>>(n_workers);
+    wait_task_begin = std::vector<time_point<steady_clock>>(n_workers);
+    wait_task_end = std::vector<time_point<steady_clock>>(n_workers);
 
 #ifdef REDGRAPES
     wait_task_worker = std::vector<unsigned>(n_workers);
@@ -255,8 +255,8 @@ void HSVtoRGB(float& fR, float& fG, float& fB, float& fH, float& fS, float& fV) 
 
 void output_svg(std::ofstream f)
 {
-    time_point<high_resolution_clock> start = wait_task_end[0];
-    time_point<high_resolution_clock> end = task_end[0];
+    time_point<steady_clock> start = wait_task_end[0];
+    time_point<steady_clock> end = task_end[0];
 
     if( block_execution )
     {

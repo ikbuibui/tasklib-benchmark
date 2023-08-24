@@ -25,10 +25,10 @@ struct MyTask0 : Task<Options, 0> {
 
     void run()
     {
-        task_begin[task_id] = high_resolution_clock::now();
+        task_begin[task_id] = steady_clock::now();
         sleep(task_duration[task_id]);
         task_thread[task_id] = std::this_thread::get_id();
-        task_end[task_id] = high_resolution_clock::now();
+        task_end[task_id] = steady_clock::now();
     }
 };
 
@@ -45,13 +45,13 @@ struct MyTask1 : Task<Options, 1> {
 
     void run()
     {
-        task_begin[task_id] = high_resolution_clock::now();
+        task_begin[task_id] = steady_clock::now();
 
         sleep(task_duration[task_id]);
         task_thread[task_id] = std::this_thread::get_id();
         hash(task_id, data1);
 
-        task_end[task_id] = high_resolution_clock::now();
+        task_end[task_id] = steady_clock::now();
     }
 };
 
@@ -73,14 +73,14 @@ struct MyTask2 : Task<Options, 2> {
 
     void run()
     {
-        task_begin[task_id] = high_resolution_clock::now();
+        task_begin[task_id] = steady_clock::now();
 
         sleep(task_duration[task_id]);
         task_thread[task_id] = std::this_thread::get_id();
         hash(task_id, data1);
         hash(task_id, data2);
 
-        task_end[task_id] = high_resolution_clock::now();
+        task_end[task_id] = steady_clock::now();
     }
 };
 
@@ -106,7 +106,7 @@ struct MyTask3 : Task<Options, 3> {
 
     void run()
     {
-        task_begin[task_id] = high_resolution_clock::now();
+        task_begin[task_id] = steady_clock::now();
 
         sleep(task_duration[task_id]);
         task_thread[task_id] = std::this_thread::get_id();
@@ -114,7 +114,7 @@ struct MyTask3 : Task<Options, 3> {
         hash(task_id, data2);
         hash(task_id, data3);
 
-        task_end[task_id] = high_resolution_clock::now();
+        task_end[task_id] = steady_clock::now();
     }
 };
 
@@ -145,7 +145,7 @@ struct MyTask4 : Task<Options, 4> {
 
     void run()
     {
-        task_begin[task_id] = high_resolution_clock::now();
+        task_begin[task_id] = steady_clock::now();
 
         sleep(task_duration[task_id]);
         task_thread[task_id] = std::this_thread::get_id();
@@ -154,7 +154,7 @@ struct MyTask4 : Task<Options, 4> {
         hash(task_id, data3);
         hash(task_id, data4);
 
-        task_end[task_id] = high_resolution_clock::now();
+        task_end[task_id] = steady_clock::now();
     }
 };
 
@@ -189,7 +189,7 @@ struct MyTask5 : Task<Options, 5> {
 
     void run()
     {
-        task_begin[task_id] = high_resolution_clock::now();
+        task_begin[task_id] = steady_clock::now();
 
         sleep(task_duration[task_id]);
         task_thread[task_id] = std::this_thread::get_id();
@@ -199,7 +199,7 @@ struct MyTask5 : Task<Options, 5> {
         hash(task_id, data4);
         hash(task_id, data5);
 
-        task_end[task_id] = high_resolution_clock::now();
+        task_end[task_id] = steady_clock::now();
     }
 };
 
@@ -218,7 +218,7 @@ struct BlockingTask : Task<Options, 0> {
 
     void run()
     {
-        wait_task_begin[i] = high_resolution_clock::now();
+        wait_task_begin[i] = steady_clock::now();
         wait_task_thread[i] = std::this_thread::get_id();
         /*
         std::unique_lock<std::mutex> l(m);
@@ -228,7 +228,7 @@ struct BlockingTask : Task<Options, 0> {
         */
         while( ! start_flag );
 
-        wait_task_end[i] = high_resolution_clock::now();
+        wait_task_end[i] = steady_clock::now();
     }
 };
 
@@ -252,7 +252,7 @@ int main(int argc, char* argv[])
         std::this_thread::sleep_for( std::chrono::milliseconds(100) );
     }
     
-    auto start = high_resolution_clock::now();
+    auto start = steady_clock::now();
  
     for( unsigned i = 0; i < n_tasks; ++i )
         switch( access_pattern[i].size() )
@@ -293,7 +293,7 @@ int main(int argc, char* argv[])
             break;
         }
 
-    auto mid = high_resolution_clock::now();
+    auto mid = steady_clock::now();
     
     if( block_execution )
     {
@@ -307,7 +307,7 @@ int main(int argc, char* argv[])
 
     tm.barrier();
 
-    auto end = high_resolution_clock::now();
+    auto end = steady_clock::now();
 
     for(int i = 0; i < n_resources; ++i)
         if(data[i] != expected_hash[i])
