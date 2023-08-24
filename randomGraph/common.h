@@ -298,8 +298,8 @@ void output_svg(std::ofstream f)
         float H,S,V;
 
         H=(360.0 * float(i) / float(n_resources));
-        if( i % 2 == 0 ) S =0.8; else S=0.3;
-        if( i % 3 == 0 ) V =0.5; else V=0.8;
+        if( i % 2 == 0 ) S =0.8; else S=0.5;
+        if( i % 3 == 0 ) V =0.5; else V=0.9;
 
         float R,G,B;
         HSVtoRGB(R,G,B,H,S,V);
@@ -354,7 +354,14 @@ void output_svg(std::ofstream f)
         unsigned tid = tids[task_thread[i]];
         #endif
 
-        unsigned x = duration_cast<microseconds>(task_begin[i] - start).count();
+        int x = duration_cast<microseconds>(task_begin[i] - start).count();
+
+        if ( x < 0 )
+        {
+            std::cout << "sus x value" << std::endl;
+            std::cout << i << std::endl;
+        }
+        
         unsigned w = duration_cast<microseconds>(task_end[i] - task_begin[i]).count();
         f << "<rect fill=\"#" << resource_colors[i % n_resources] << "\" stroke=\"#000\" x=\""<<x<<"\" y=\""<<(th * tid)<<"\" width=\""<<w<<"\" height=\""<<th<<"\"/>" << std::endl;        
     }
