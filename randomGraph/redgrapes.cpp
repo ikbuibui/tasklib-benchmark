@@ -32,23 +32,36 @@ int main(int argc, char* argv[])
 #endif
 
     std::vector<rg::IOResource<std::array<uint64_t, 8>>> resources( n_resources );
-    
+
     if( block_execution )
     {
+        std::atomic_int count(0);
+        
         for( unsigned i = 0; i < n_workers; ++i )
-            rg::emplace_task([i]() {
+            rg::emplace_task([i, &count]() {
+                wait_task_begin[i] = steady_clock::now();
                 wait_task_worker[i] = redGrapes::dispatch::thread::current_worker->get_worker_id();
+                count.fetch_add(1);
 
+                // block this worker until start flag
                 while( ! start_flag );
 
                 wait_task_end[i] = steady_clock::now();
             });
 
-        std::this_thread::sleep_for( std::chrono::milliseconds(500) );
+        // wait until all block-tasks are up and running
+        int last_count = count;
+        while( count < n_workers ) {
+
+            if(last_count !=  count)
+                std::cout << count << std::endl;
+
+            last_count = count;
+        }
     }
 
-    auto start = high_resolution_clock::now();
-
+    auto start = steady_clock::now();
+    
     for(int i = 0; i < n_tasks; ++i)
         switch(access_pattern[i].size())
         {

@@ -260,7 +260,11 @@ void output_svg(std::ofstream f)
 
     if( block_execution )
     {
+#ifdef REDGRAPES
         for(unsigned i = 0; i < n_workers; ++i)
+#else
+        for(unsigned i = 0; i < n_workers-1; ++i)
+#endif
         {
             if( wait_task_end[i] < start )
                 start = wait_task_end[i];
@@ -320,11 +324,14 @@ void output_svg(std::ofstream f)
 
     if( block_execution )
     {
+#ifdef REDGRAPES
         for(unsigned i = 0; i < n_workers; ++i)
         {
-            #ifdef REDGRAPES
             unsigned tid = wait_task_worker[i];
-            #else
+#else
+        for(unsigned i = 0; i < n_workers; ++i)
+        {
+
             if( tids.count( wait_task_thread[i] ) == 0 )
                 tids.emplace( wait_task_thread[i], next_tid++ );
 

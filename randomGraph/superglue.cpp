@@ -1,6 +1,6 @@
 #include <chrono>
 #include <sg/superglue.hpp>
-
+#include <atomic>
 #include <iomanip>
 #include <sys/time.h>
 #include <stdio.h>
@@ -207,6 +207,7 @@ struct MyTask5 : Task<Options, 5> {
 std::mutex m;
 std::condition_variable cv;
 volatile bool start_flag = false;
+std::atomic_int count(0);
 
 struct BlockingTask : Task<Options, 0> {
     unsigned i;
@@ -220,12 +221,8 @@ struct BlockingTask : Task<Options, 0> {
     {
         wait_task_begin[i] = steady_clock::now();
         wait_task_thread[i] = std::this_thread::get_id();
-        /*
-        std::unique_lock<std::mutex> l(m);
-        cv.wait(l, [] {
-            return start_flag;
-        });
-        */
+
+        count.fetch_add(1);
         while( ! start_flag );
 
         wait_task_end[i] = steady_clock::now();
@@ -245,11 +242,17 @@ int main(int argc, char* argv[])
     {
         // spawn (n_workers - 1) many tasks to block all threads
         // the main thread is the first worker, so decrement by one
-
         for( unsigned i = 0; i < n_workers; ++i )
             tm.submit( new BlockingTask(i) );
 
-        std::this_thread::sleep_for( std::chrono::milliseconds(100) );
+        // wait until all block-tasks are up and running
+        int last_count = count;
+        while( count < n_workers-1 ) {
+            if(last_count != count )
+                std::cout << count << std::endl;
+
+            last_count = count;
+        }
     }
     
     auto start = steady_clock::now();

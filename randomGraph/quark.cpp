@@ -6,6 +6,7 @@
 #include <thread>
 #include <iomanip>
 #include <string.h> // need to include this to compile
+#include <atomic>
 #include "quark.h"
 #include "common.h"
 
@@ -108,6 +109,7 @@ void myTask5(Quark * quark)
 std::mutex m;
 std::condition_variable cv;
 volatile bool start_flag = false;
+std::atomic_int count(0);
 
 void blocking_task(Quark * quark)
 {
@@ -117,12 +119,7 @@ void blocking_task(Quark * quark)
     wait_task_begin[i] = steady_clock::now();
     wait_task_thread[i] = std::this_thread::get_id();
 
-    /*
-    std::unique_lock<std::mutex> l(m);
-    cv.wait(l, [] {
-        return start_flag;
-    });
-    */
+    count.fetch_add(1);
     while( !start_flag );
 
     wait_task_end[i] = steady_clock::now();
@@ -148,7 +145,15 @@ int main(int argc, char* argv[])
                               0);
         }
 
-        std::this_thread::sleep_for( std::chrono::milliseconds(500) );
+        // wait until all block-tasks are up and running
+        int last_count = count;
+        while( count < n_workers-1 ) {
+
+            if(last_count !=  count)
+                std::cout << count << std::endl;
+
+            last_count = count;
+        }
     }
     
     auto start = steady_clock::now();
