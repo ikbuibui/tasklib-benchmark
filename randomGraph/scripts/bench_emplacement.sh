@@ -1,8 +1,8 @@
 #!/bin/sh
 
 n_tasks=8192
-n_resources=10
-n_workers=2
+n_resources=64
+n_workers=64
 n_repeat=${n_repeat-15}
 
 build()
@@ -24,7 +24,7 @@ run()
 	for n_deps in 0 1 2 3 4 5;
 	do
 	    DATA=""
-	    ARGS="$n_tasks $n_resources $n_deps $n_deps 0 0 $n_workers true"
+	    ARGS="$n_tasks $n_resources $n_deps $n_deps 0 0 $n_workers false"
 
 	    for i in $(seq $n_repeat);
 	    do
@@ -70,5 +70,4 @@ data/emplacement/redgrapes RedGrapes #C976F1 #670496"
 build
 run
 plot
-
 
