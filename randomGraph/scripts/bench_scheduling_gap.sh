@@ -54,9 +54,8 @@ run()
 
 plot()
 {
-    mkdir -p plots
-
-    OUTPUT="plots/scheduling_gap_dur${min_task_duration}_${max_task_duration}_w${n_workers}.png"
+    mkdir -p plots/$(hostname)
+    OUTPUT="plots/$(hostname)/scheduling_gap_dur${min_task_duration}_${max_task_duration}_w${n_workers}.png"
     TITLE="${n_resources} chains,\\\n ${n_workers} workers,\\\n ${min_task_duration} - ${max_task_duration} μs task duration,\\\n Host: $(cat /etc/hostname)"
     LABEL_X="#tasks"
     LABEL_Y="avg scheduling gap (μs)"

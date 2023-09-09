@@ -63,8 +63,8 @@ run()
 
 plot()
 {
-    mkdir -p plots
-    OUTPUT="plots/overhead_res${n_resources}_dep${min_dependencies}_${max_dependencies}_dur${min_task_duration}_${max_task_duration}_thr${n_workers}.png"
+    mkdir -p plots/$(hostname)
+    OUTPUT="plots/$(hostname)/overhead_res${n_resources}_dep${min_dependencies}_${max_dependencies}_dur${min_task_duration}_${max_task_duration}_thr${n_workers}.png"
     TITLE="$n_workers workers,\\\n${n_resources} resources,\\\n${min_dependencies} - ${max_dependencies} dependencies per task,\\\n ${min_task_duration} - ${max_task_duration} μs task duration,\\\n Host: $(cat /etc/hostname)"
     LABEL_X="#tasks"
     LABEL_Y="avg runtime overhead per task (μs)"

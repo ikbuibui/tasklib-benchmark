@@ -18,8 +18,8 @@ do
     i=$((i + 1))
 done
 
-mkdir -p plots
-OUTPUT="plots/bench_latency.png"
+mkdir -p plots/$(hostname)
+OUTPUT="plots/$(hostname)/bench_latency.png"
 
 gnuplot -p \
    -e "set output \"${OUTPUT}\"" \
