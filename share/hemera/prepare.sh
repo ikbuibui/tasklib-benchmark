@@ -44,3 +44,5 @@ benchmark_job() {
 load_modules
 export_paths
 
+export -f build_dependencies
+
