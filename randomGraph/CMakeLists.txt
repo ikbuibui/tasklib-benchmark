@@ -20,9 +20,9 @@ target_link_directories(superglue PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../thirdpar
 target_link_libraries(superglue hwloc pthread)
 
 add_executable(quark src/quark.cpp)
-target_include_directories(quark PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../thirdparty/quark-0.9.0/install/include")
 target_include_directories(quark PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../thirdparty/.install/include")
-target_link_libraries(quark "${CMAKE_CURRENT_LIST_DIR}/../thirdparty/quark-0.9.0/install/lib/libquark.a")
+target_link_libraries(quark "${CMAKE_CURRENT_LIST_DIR}/../thirdparty/.install/lib/libquark.a")
 target_link_directories(quark PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../thirdparty/.install/lib")
+
 target_link_libraries(quark hwloc pthread)
 
