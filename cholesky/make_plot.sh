@@ -15,9 +15,10 @@ build()
 
 run()
 {
+    mkdir -p data
     for lib in redgrapes superglue quark;
     do
-	truncate -s 0 ${lib}_data
+	truncate -s 0 data/${lib}
 	for nblks in 4 8 16 32 64;
 	do
 	    DATA=""
@@ -41,7 +42,7 @@ run()
 	    SIG=$(bc -l <<< "sqrt($VAR)")
 
 	    echo "min=$MIN, max=$MAX, avg=$AVG, sigma=$SIG"
-	    echo "$nblks $AVG $MIN $MAX $SIG" >> ${lib}_data
+	    echo "$nblks $AVG $MIN $MAX $SIG" >> data/${lib}
 	done
     done
 }
@@ -50,13 +51,13 @@ plot()
 {
     mkdir -p plots/$(hostname)
     OUTPUT="plots/$(hostname)/bench_cholesky_w${n_workers}_m${matrix_size}.png"
-    TITLE="cholesky factorization\\n $matrix_size x $matrix_size matrix of 64-bit float\\n $n_workers workers \\n host: $(hostname)"
+    TITLE="cholesky factorization\\\n $matrix_size x $matrix_size matrix of 64-bit float\\\n $n_workers workers \\\n host: $(hostname)"
     LABEL_X="tiling factor (#tiles^{0.5})"
     LABEL_Y="runtime (ms)"
 
-    . ../plot.sh <<< "quark_data Quark #86C4FF #006DD5
-superglue_data SuperGlue #88F176 #20D500
-redgrapes_data RedGrapes #C976F1 #670496"
+    . ../plot.sh <<< "data/quark Quark #86C4FF #006DD5
+data/superglue SuperGlue #88F176 #20D500
+data/redgrapes RedGrapes #C976F1 #670496"
 }
 
 build
