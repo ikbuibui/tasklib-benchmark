@@ -22,9 +22,9 @@ As compiler, we used gcc 11.2.0 with the -O3 option.
 ### Cholesky Factorization
 We calculate a *tiled* cholesky decomposition using BLAS functions on a randomly generated matrix and measure the total runtime.
 
-Matrix Size 1024x1024 (8MiB) | Matrix Size 4096x4096 (128MiB) | Matrix Size 8192x8192 (512MiB) |
+Matrix Size 4096x4096 (128MiB) | Matrix Size 8192x8192 (512MiB) |
 |:-------------------:|:---------------------:|:-----------------:|
-![Cholesky Benchmark](cholesky/plots/cro006.cluster/bench_cholesky_w64_m1024.png) | ![Cholesky Benchmark](cholesky/plots/cro006.cluster/bench_cholesky_w64_m4096.png) | ![Cholesky Benchmark](cholesky/plots/cro006.cluster/bench_cholesky_w64_m8192.png)
+![Cholesky 128MiB](cholesky/plots/8b2914e/cro018.cluster/bench_cholesky_w64_m4096.png) | ![Cholesky 512MiB](cholesky/plots/8b2914e/cro018.cluster/bench_cholesky_w64_m8192.png)
 
 ### Total Runtime Overhead
 In this synthetic benchmark, we spawn a number of tasks, where each task sleeps a given amount of time to simulate a workload.
@@ -40,16 +40,8 @@ Each task sleeps for a fixed duration of 25μs.
 The ideal execution time is then given by $$ n\_tasks * task\_duration / n\_workers $$.
 We measure the total execution time and take the difference to the ideal execution time and divide by the number of tasks. This yields the average overhead per task.
 
-Task Length: 0μs | Task Length: 50μs |
-|:--------------:|:-----------------:|
-![Overhead: Independent Tasks](randomGraph/plots/cro006.cluster/overhead_res64_dep0_0_dur0_0_thr64.png) | ![Overhead: Independent Tasks](randomGraph/plots/cro006.cluster/overhead_res64_dep0_0_dur50_50_thr64.png)
-
 #### Total Runtime Overhead: Chains
 Here we create tasks with exactly one dependency each. This is done by having as many resources as workers (64 in this case) and choosing the resource for each task by round-robin (task i uses resource i%64).
-
-Task Length: 0μs | Task Length: 50μs | Task Length: 25-500μs (linearly distributed)
-|:--------------:|:-----------------:|:-------------------------------------------:|
-![Overhead: Chains](randomGraph/plots/cro006.cluster/overhead_res64_dep1_1_dur0_0_thr64.png) | ![Overhead: Chains](randomGraph/plots/cro006.cluster/overhead_res64_dep1_1_dur50_50_thr64.png) | ![Overhead: Chains](randomGraph/plots/cro006.cluster/overhead_res64_dep1_1_dur25_500_thr64.png)
 
 #### Total Runtime Overead: Random Graph
 Now, for each task, the number of dependencies it has is randomly distributed, where each task has at least one dependency and at maximum five. Then, for each required dependency a unique resource is chosen which the task uses.
@@ -57,9 +49,9 @@ Since the number of workers and thus the actual amount parallelism is finite, we
 Therefore the number of resources is equal to the number of workers, to limit potential parallelism.
 Task length is randomized from 128μs to 512μs.
 
-| Task Length: 50μs | Task Length: 25-500μs (linearly distributed)
-|:-----------------:|:-------------------------------------------:|
-![Random Graph Benchmark](randomGraph/plots/cro006.cluster/overhead_res64_dep1_5_dur50_50_thr64.png) | ![Random Graph Benchmark](randomGraph/plots/cro006.cluster/overhead_res64_dep1_5_dur25_500_thr64.png)
+Independent Tasks | Chains | Random Graph
+|:--------------:|:-----------------:|:-------------------------------------------:|
+![Overhead: Independent](randomGraph/plots/8b2914e/cro018.cluster/overhead_res64_dep0_0_dur200_200_thr64.png) | ![Overhead: Chains](randomGraph/plots/8b2914e/cro018.cluster/overhead_res64_dep1_1_dur200_200_thr64.png) | ![Overhead: Random](randomGraph/plots/8b2914e/cro018.cluster/overhead_res64_dep1_5_dur200_200_thr64.png)
 
 ### Scheduling Overhead / Gap
 After all tasks are created, we measure the time it takes for the runtime system to consume all tasks.
@@ -68,7 +60,7 @@ Only a single worker is used.
 
 Task Length: 0μs | Task Length: 50μs | Task Length: 25-500μs (linearly distributed)
 |:--------------:|:-----------------:|:-------------------------------------------:|
-![Scheduling Gap](randomGraph/plots/cro006.cluster/scheduling_gap_dur0_0_w64.png) | ![Scheduling Gap](randomGraph/plots/cro006.cluster/scheduling_gap_dur50_50_w64.png) | ![Scheduling Gap](randomGraph/plots/cro006.cluster/scheduling_gap_dur25_500_w64.png)
+![Scheduling Gap: 0μs](randomGraph/plots/8b2914e/cro018.cluster/scheduling_gap_dur0_0_w64.png) | ![Scheduling Gap: 50μs](randomGraph/plots/8b2914e/cro018.cluster/scheduling_gap_dur50_50_w64.png) | ![Scheduling Gap: 25-500μs](randomGraph/plots/8b2914e/cro018.cluster/scheduling_gap_dur25_500_w64.png) |
 
 ### Latency & Emplacement Overhead
 Latency is measured as the time elapsed between the emplacement of a task and the begin of its execution.
@@ -80,7 +72,7 @@ $$ Latency = Emplacement Overhead + Scheduling Overhead $$
 
 | Emplacement Overhead | Latency |
 |:--------------------:|:-------:|
-![Emplacement Overhead](randomGraph/plots/cro006.cluster/emplacement.png) | ![Latency](latency/plots/cro006.cluster/bench_latency.png)
+![Emplacement](randomGraph/plots/8b2914e/cro018.cluster/emplacement.png) | ![Latency](latency/plots/8b2914e/cro018.cluster/bench_latency.png)
 
 ### Usability Benchmark
 

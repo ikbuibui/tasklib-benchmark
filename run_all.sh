@@ -2,7 +2,7 @@
 
 export n_workers=64
 export n_resources=$n_workers
-export n_repeat=1
+export n_repeat=15
 
 README="$(pwd)/README.md"
 
@@ -19,31 +19,43 @@ update_image "Latency" "latency/${OUTPUT}"
 popd
 
 pushd randomGraph
-./scripts/bench_emplacement.sh
+. ./scripts/bench_emplacement.sh
 update_image "Emplacement" "randomGraph/${OUTPUT}"
 
-./scripts/bench_overhead.sh
+export min_task_duration=200
+export max_task_duration=200
+
+export min_dependencies=0
+export max_dependencies=0
+. ./scripts/bench_overhead.sh
 update_image "Overhead: Independent" "randomGraph/${OUTPUT}"
 
-./scripts/bench_overhead.sh
+export min_dependencies=1
+export max_dependencies=1
+. ./scripts/bench_overhead.sh
 update_image "Overhead: Chains" "randomGraph/${OUTPUT}"
 
-./scripts/bench_overhead.sh
+export min_dependencies=1
+export max_dependencies=5
+. ./scripts/bench_overhead.sh
 update_image "Overhead: Random" "randomGraph/${OUTPUT}"
+
+
+
 
 export min_task_duration=0
 export max_task_duration=0
-./scripts/bench_scheduling_gap.sh
+. ./scripts/bench_scheduling_gap.sh
 update_image "Scheduling Gap: 0μs" "randomGraph/$OUTPUT"
 
 export min_task_duration=50
 export max_task_duration=50
-./scripts/bench_scheduling_gap.sh
+. ./scripts/bench_scheduling_gap.sh
 update_image "Scheduling Gap: 50μs" "randomGraph/$OUTPUT"
 
 export min_task_duration=25
 export max_task_duration=500
-./scripts/bench_scheduling_gap.sh
+. ./scripts/bench_scheduling_gap.sh
 update_image "Scheduling Gap: 25-500μs" "randomGraph/$OUTPUT"
 
 popd
