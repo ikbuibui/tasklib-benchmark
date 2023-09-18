@@ -59,9 +59,14 @@ run()
 
 plot()
 {
-    mkdir -p plots/$(hostname)
-    OUTPUT="plots/$(hostname)/scheduling_gap_dur${min_task_duration}_${max_task_duration}_w${n_workers}.png"
-    TITLE="${n_resources} chains,\\\n ${n_workers} workers,\\\n ${min_task_duration} - ${max_task_duration} μs task duration,\\\n Host: $(cat /etc/hostname)"
+    pushd ../thirdparty/redGrapes/
+    redGrapes_commit=$(git rev-parse --short HEAD)
+    popd
+
+    TARGET_DIR="plots/${redGrapes_commit}/$(hostname)"
+    mkdir -p ${TARGET_DIR}
+    OUTPUT="${TARGET_DIR}/scheduling_gap_dur${min_task_duration}_${max_task_duration}_w${n_workers}.png"
+    TITLE="${n_resources} chains,\\\n ${n_workers} workers,\\\n ${min_task_duration} - ${max_task_duration} μs task duration,\\\n Host: $(cat /etc/hostname)\\\nredGrapes: #${redGrapes_commit}"
     LABEL_X="#tasks"
     LABEL_Y="avg scheduling gap (μs)"
     LOGX=1

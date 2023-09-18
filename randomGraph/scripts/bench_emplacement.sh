@@ -20,7 +20,7 @@ run()
 
     for lib in quark redgrapes superglue;
     do
-	truncate -s 0 data/emplacement/${lib}
+	truncate -s 0 data/emplacement/${lib}-$(hostname)
 	for n_deps in 0 1 2 3 4 5;
 	do
 	    DATA=""
@@ -49,22 +49,28 @@ run()
 	    SIG=$(bc -l <<< "sqrt($VAR)")
 
 	    echo "min=$MIN, max=$MAX, avg=$AVG, sigma=$SIG"
-	    echo "$n_deps $AVG $MIN $MAX $SIG" >> data/emplacement/${lib}
+	    echo "$n_deps $AVG $MIN $MAX $SIG" >> data/emplacement/${lib}-$(hostname)
 	done
     done
 }
 
 plot()
 {
-    mkdir -p plots/$(hostname)
-    OUTPUT="plots/$(hostname)/emplacement.png"
-    TITLE="emplacement time,\\\n Host: $(hostname)"
+    pushd ../thirdparty/redGrapes/
+    redGrapes_commit=$(git rev-parse --short HEAD)
+    popd
+
+    TARGET_DIR="plots/${redGrapes_commit}/$(hostname)"
+    mkdir -p ${TARGET_DIR}
+    
+    OUTPUT="${TARGET_DIR}/emplacement.png"
+    TITLE="emplacement time,\\\n Host: $(hostname)\\\nredGrapes: #${redGrapes_commit}"
     LABEL_X="#dependencies"
     LABEL_Y="emplacement overhead per task (μs)"
 
-    . ../plot.sh <<< "data/emplacement/quark Quark #86C4FF #006DD5
-data/emplacement/superglue SuperGlue #88F176 #20D500
-data/emplacement/redgrapes RedGrapes #C976F1 #670496"
+    . ../plot.sh <<< "data/emplacement/quark-$(hostname) Quark #86C4FF #006DD5
+data/emplacement/superglue-$(hostname) SuperGlue #88F176 #20D500
+data/emplacement/redgrapes-$(hostname) RedGrapes #C976F1 #670496"
 }
 
 build

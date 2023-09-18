@@ -18,13 +18,20 @@ do
     i=$((i + 1))
 done
 
-mkdir -p plots/$(hostname)
-OUTPUT="plots/$(hostname)/bench_latency.png"
 
+pushd ../thirdparty/redGrapes/
+redGrapes_commit=$(git rev-parse --short HEAD)
+popd
+
+TARGET_DIR="plots/${redGrapes_commit}/$(hostname)"
+mkdir -p ${TARGET_DIR}
+OUTPUT="${TARGET_DIR}/bench_latency.png"
+
+echo "OUTPUT=${OUTPUT}"
 gnuplot -p \
    -e "set output \"${OUTPUT}\"" \
    -e 'set terminal pngcairo enhanced truecolor size 1200,900 font "DejaVu Sans,24"' \
-   -e 'set title "latency of one single task"' \
+   -e "set title \"latency of one single task\\nHost: $(hostname)\\nredGrapes #${redGrapes_commit}\"" \
    -e 'set xlabel "latency (μs)"' \
    -e 'set yrange [0:*]' \
    -e 'set style fill solid' \

@@ -49,8 +49,13 @@ run()
 
 plot()
 {
-    mkdir -p plots/$(hostname)
-    OUTPUT="plots/$(hostname)/bench_cholesky_w${n_workers}_m${matrix_size}.png"
+    pushd ../thirdparty/redGrapes/
+    redGrapes_commit=$(git rev-parse --short HEAD)
+    popd
+
+    TARGET_DIR="plots/${redGrapes_commit}/$(hostname)"
+    mkdir -p ${TARGET_DIR}
+    OUTPUT="${TARGET_DIR}/bench_cholesky_w${n_workers}_m${matrix_size}.png"
     TITLE="cholesky factorization\\\n $matrix_size x $matrix_size matrix of 64-bit float\\\n $n_workers workers \\\n host: $(hostname)"
     LABEL_X="tiling factor (#tiles^{0.5})"
     LABEL_Y="runtime (ms)"
