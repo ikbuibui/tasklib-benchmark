@@ -1,8 +1,8 @@
 #!/bin/sh
 
-n_tasks=8192
+n_tasks=${n_tasks-8192}
+n_workers=${n_workers-1}
 n_resources=64
-n_workers=64
 n_repeat=${n_repeat-15}
 
 build()

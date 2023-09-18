@@ -23,7 +23,7 @@ As compiler, we used gcc 11.2.0 with the -O3 option.
 We calculate a *tiled* cholesky decomposition using BLAS functions on a randomly generated matrix and measure the total runtime.
 
 Matrix Size 4096x4096 (128MiB) | Matrix Size 8192x8192 (512MiB) |
-|:-------------------:|:---------------------:|:-----------------:|
+|:-------------------:|:---------------------:|
 ![Cholesky 128MiB](cholesky/plots/8b2914e/cro018.cluster/bench_cholesky_w64_m4096.png) | ![Cholesky 512MiB](cholesky/plots/8b2914e/cro018.cluster/bench_cholesky_w64_m8192.png)
 
 ### Total Runtime Overhead
