@@ -1,8 +1,8 @@
 #!/bin/sh
 
 n_workers=${n_workers-64}
-min_task_duration=${min_task_duration-0}
-max_task_duration=${max_task_duration-0}
+min_task_duration=${min_task_duration-100}
+max_task_duration=${max_task_duration-100}
 n_resources=$n_workers
 n_repeat=${n_repeat-15}
 
