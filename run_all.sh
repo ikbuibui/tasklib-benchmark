@@ -8,8 +8,8 @@ README="$(pwd)/README.md"
 
 update_image() {
     echo "update_image..."
-    echo "sed" "s~\[$1\](.*)~[$1]($2)~g" ${README}
-    sed -i "s~\[$1\](.*)~[$1]($2)~g" ${README}
+    echo "sed" "s~\[$1\]([^\)]*)~[$1]($2)~g" ${README}
+    sed -i "s~\[$1\]([^\)]*)~[$1]($2)~g" ${README}
 }
 
 pushd latency
