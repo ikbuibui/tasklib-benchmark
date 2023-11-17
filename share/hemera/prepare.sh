@@ -32,7 +32,9 @@ export_paths() {
     export redGrapes_DIR=${BENCHMARK_DIR}/thirdparty/redGrapes
     export fmt_DIR=${BENCHMARK_DIR}/thirdparty/.install/lib64/cmake/fmt/
     export spdlog_DIR=${BENCHMARK_DIR}/thirdparty/.install/lib64/cmake/spdlog/    
+    export HWLOC_ROOT=${BENCHMARK_DIR}/thirdparty/.install/
     export LD_LIBRARY_PATH=${BENCHMARK_DIR}/thirdparty/.install/lib:${LD_LIBRARY_PATH}
+    export CMAKE_PREFIX_PATH=${BENCHMARK_DIR}/thirdparty/.install:${CMAKE_PREFIX_PATH}
 }
 
 benchmark_job() {
