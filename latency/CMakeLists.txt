@@ -12,6 +12,8 @@ add_executable(redgrapes src/redgrapes.cpp)
 target_include_directories(redGrapes PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../thirdparty/.install/include")
 target_link_directories(redgrapes PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../thirdparty/.install/lib")
 target_link_libraries(redgrapes redGrapes)
+target_compile_options(redGrapes PRIVATE "-DNDEBUG")
+target_compile_options(redgrapes PRIVATE "-DNDEBUG")
 
 add_executable(superglue src/superglue.cpp)
 target_include_directories(superglue PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../thirdparty/superglue/include")
