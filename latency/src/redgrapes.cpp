@@ -4,7 +4,6 @@
 #include <redGrapes/resource/ioresource.hpp>
 #include "common.h"
 
-namespace rg = redGrapes;
 using namespace std::chrono;
 
 unsigned n_threads = 1;
@@ -12,14 +11,14 @@ unsigned n_tasks = 10000;
 
 int main(int argc, char* argv[])
 {
-    rg::init(n_threads);
+    auto rg = redGrapes::init(n_threads);
 
     /* warmup */
     {
         for(unsigned i = 0; i < 64; ++i)
-            rg::emplace_task(
+            rg.emplace_task(
                              []{});
-        rg::barrier();
+        rg.barrier();
     }
 
     /* measure */
@@ -28,15 +27,13 @@ int main(int argc, char* argv[])
     for(unsigned i = 0; i < n_tasks; ++i)
     {
         auto start = high_resolution_clock::now();
-        auto stop = rg::emplace_task(
+        auto stop = rg.emplace_task(
             []() {
                 return high_resolution_clock::now();
             }).get();
 
         avg_latency += duration_cast<nanoseconds>(stop - start);
     }
-
-    rg::finalize();
 
     avg_latency /= n_tasks;
 

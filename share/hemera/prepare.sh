@@ -3,17 +3,16 @@
 export BENCHMARK_DIR=$(pwd)
 
 load_modules() {
+    module purge
     module load git
-    module load cmake/3.20
+    module load cmake/3.26.1
     module load python/3.10.4
 
     module load gcc/11.2.0
     module load boost/1.79.0
-    module load openblas/rome/0.3.17
-    module load gcc/13.2.0
-
-    module load openmpi
-    module load zlib libpng/1.6.35
+    module load openmpi/4.1.1-rome
+    module load zlib/1.2.11
+    module load libpng/1.6.35
     module load pngwriter/0.7.0
 
     # generating plots

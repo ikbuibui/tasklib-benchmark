@@ -4,13 +4,11 @@
 #include <cstdint>
 #include <redGrapes/redGrapes.hpp>
 #include <redGrapes/resource/ioresource.hpp>
-#include <redGrapes/scheduler/default_scheduler.hpp>
 
 #include <iomanip>
 #include <mutex>
 #include <condition_variable>
 
-namespace rg = redGrapes;
 using namespace std::chrono;
 
 std::mutex m;
@@ -19,28 +17,29 @@ std::atomic<bool> start_flag{ false };
 
 int main(int argc, char* argv[])
 {
-    spdlog::set_level( spdlog::level::trace );
+    spdlog::set_level( spdlog::level::off );
     spdlog::set_pattern("[thread %t] %^[%l]%$ %v");
 
     read_args(argc, argv);
     generate_access_pattern();
 
-    rg::init(n_workers);
+    auto rg = redGrapes::init(n_workers);
+    using TTask = decltype(rg)::RGTask;
 
 #if REDGRAPES_ENABLE_TRACE
     auto ts = StartTracing();
 #endif
 
-    std::vector<rg::IOResource<std::array<uint64_t, 8>>> resources( n_resources );
+    std::vector<redGrapes::IOResource<std::array<uint64_t, 8>,TTask>> resources( n_resources );
 
     if( block_execution )
     {
         std::atomic_int count(0);
         
         for( unsigned i = 0; i < n_workers; ++i )
-            rg::emplace_task([i, &count]() {
+            rg.emplace_task([i, &count]() {
                 wait_task_begin[i] = steady_clock::now();
-                wait_task_worker[i] = redGrapes::SingletonContext::get().current_worker->get_worker_id();
+                wait_task_worker[i] = *(redGrapes::TaskFreeCtx::current_worker_id);
                 count.fetch_add(1);
 
                 // block this worker until start flag
@@ -66,10 +65,10 @@ int main(int argc, char* argv[])
         switch(access_pattern[i].size())
         {
         case 0:
-            rg::emplace_task([i]() {
+            rg.emplace_task([i]() {
                 task_begin[i] = steady_clock::now();
 
-                task_worker[i] = redGrapes::SingletonContext::get().current_worker->get_worker_id();
+                task_worker[i] = *(redGrapes::TaskFreeCtx::current_worker_id);
                 sleep(task_duration[i]);
 
                 task_end[i] = steady_clock::now();
@@ -77,14 +76,14 @@ int main(int argc, char* argv[])
             break;
 
         case 1:
-            rg::emplace_task(
+            rg.emplace_task(
                 [i](auto ra1)
                 {
                     task_begin[i] = steady_clock::now();
 
                     //spdlog::info("task {}, res {}", i, access_pattern[i][0]);
                     sleep(task_duration[i]);
-                    task_worker[i] = redGrapes::SingletonContext::get().current_worker->get_worker_id();
+                    task_worker[i] = *(redGrapes::TaskFreeCtx::current_worker_id);
                     hash(i, *ra1);
 
                     task_end[i] = steady_clock::now();
@@ -93,13 +92,13 @@ int main(int argc, char* argv[])
             break;
 
         case 2:
-            rg::emplace_task(
+            rg.emplace_task(
                 [i](auto ra1, auto ra2)
                 {
                     task_begin[i] = steady_clock::now();
 
                     sleep(task_duration[i]);
-                    task_worker[i] = redGrapes::SingletonContext::get().current_worker->get_worker_id();
+                    task_worker[i] = *(redGrapes::TaskFreeCtx::current_worker_id);
                     hash(i, *ra1);
                     hash(i, *ra2);
 
@@ -110,13 +109,13 @@ int main(int argc, char* argv[])
             break;
 
         case 3:
-            rg::emplace_task(
+            rg.emplace_task(
                 [i](auto ra1, auto ra2, auto ra3)
                 {
                     task_begin[i] = steady_clock::now();
 
                     sleep(task_duration[i]);
-                    task_worker[i] = redGrapes::SingletonContext::get().current_worker->get_worker_id();
+                    task_worker[i] = *(redGrapes::TaskFreeCtx::current_worker_id);
 
                     hash(i, *ra1);
                     hash(i, *ra2);
@@ -130,13 +129,13 @@ int main(int argc, char* argv[])
             break;
 
         case 4:
-            rg::emplace_task(
+            rg.emplace_task(
                 [i](auto ra1, auto ra2, auto ra3, auto ra4)
                 {
                     task_begin[i] = steady_clock::now();
 
                     sleep(task_duration[i]);
-                    task_worker[i] = redGrapes::SingletonContext::get().current_worker->get_worker_id();
+                    task_worker[i] = *(redGrapes::TaskFreeCtx::current_worker_id);
 
                     hash(i, *ra1);
                     hash(i, *ra2);
@@ -152,13 +151,13 @@ int main(int argc, char* argv[])
             break;
 
         case 5:
-            rg::emplace_task(
+            rg.emplace_task(
                 [i](auto ra1, auto ra2, auto ra3, auto ra4, auto ra5)
                 {
                     task_begin[i] = steady_clock::now();
 
                     sleep(task_duration[i]);
-                    task_worker[i] = redGrapes::SingletonContext::get().current_worker->get_worker_id();
+                    task_worker[i] = *(redGrapes::TaskFreeCtx::current_worker_id);
 
                     hash(i, *ra1);
                     hash(i, *ra2);
@@ -186,11 +185,9 @@ int main(int argc, char* argv[])
     }
 
     // wait for execution to finish
-    rg::barrier();
+    rg.barrier();
 
     auto end = steady_clock::now();
-
-    rg::finalize();
 
     for(int i = 0; i < n_resources; ++i)
         if(*resources[i] != expected_hash[i])
