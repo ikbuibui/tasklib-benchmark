@@ -4,3 +4,6 @@
 [submodule "thirdparty/superglue"]
 	path = thirdparty/superglue
 	url = https://github.com/tillenius/superglue.git
+[submodule "thirdparty/redGrapes"]
+	path = thirdparty/redGrapes
+	url = https://github.com/ComputationalRadiationPhysics/redGrapes.git
