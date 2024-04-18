@@ -10,6 +10,7 @@ load_modules() {
 
     module load gcc/11.2.0
     module load boost/1.79.0
+    module load openblas/rome/0.3.17
     module load openmpi/4.1.1-rome
     module load zlib/1.2.11
     module load libpng/1.6.35
