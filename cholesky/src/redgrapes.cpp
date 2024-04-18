@@ -7,15 +7,14 @@
 #include <cblas.h>
 #include <lapacke.h>
 
-namespace rg = redGrapes;
 using namespace std::chrono;
 
 int main(int argc, char *argv[]) {
     read_args(argc, argv);
-    rg::init(n_workers);
-    
+    auto rg = redGrapes::init(n_workers);
+    using TTask = decltype(rg)::RGTask;
     // initialize tiled matrix in column-major layout
-    std::vector<rg::IOResource<double*>> A(nblks * nblks);
+    std::vector<redGrapes::IOResource<double*,TTask>> A(nblks * nblks);
 
     // allocate each tile (also in column-major layout)
     for(size_t j = 0; j < nblks; ++j)
@@ -43,7 +42,7 @@ int main(int argc, char *argv[]) {
             for(size_t i = j + 1; i < nblks; i++)
             {
                 // A[i,j] = A[i,j] - A[i,k] * (A[j,k])^t
-                rg::emplace_task(
+                rg.emplace_task(
                     [](auto a, auto b, auto c)
                     {
                         cblas_dgemm(CblasColMajor, CblasNoTrans, CblasTrans,
@@ -58,7 +57,7 @@ int main(int argc, char *argv[]) {
         for(size_t i = 0; i < j; i++)
         {
             // A[j,j] = A[j,j] - A[j,i] * (A[j,i])^t
-            rg::emplace_task(
+            rg.emplace_task(
                 [](auto a, auto c)
                 {
                     cblas_dsyrk(CblasColMajor, CblasLower, CblasNoTrans,
@@ -69,7 +68,7 @@ int main(int argc, char *argv[]) {
         }
 
         // Cholesky Factorization of A[j,j]
-        rg::emplace_task(
+        rg.emplace_task(
             [j](auto a)
             {
                 LAPACKE_dpotrf(LAPACK_COL_MAJOR, 'L', blksz, *a, blksz);
@@ -79,7 +78,7 @@ int main(int argc, char *argv[]) {
         for(size_t i = j + 1; i < nblks; i++)
         {
             // A[i,j] <- A[i,j] = X * (A[j,j])^t
-            rg::emplace_task(
+            rg.emplace_task(
                 [](auto a, auto b)
                 {
                     cblas_dtrsm(CblasColMajor,
@@ -90,9 +89,7 @@ int main(int argc, char *argv[]) {
                 A[j * nblks + i].write());
         }
     }
-    
-    rg::finalize();
-    
+        
     auto end = high_resolution_clock::now();
 
     std::cout << std::fixed << std::setprecision(6);
