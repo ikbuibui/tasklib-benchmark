@@ -15,7 +15,7 @@ add_executable(redgrapes src/redgrapes.cpp)
 target_compile_features(redgrapes PUBLIC cxx_std_${redGrapes_CXX_STANDARD})
 target_link_libraries(redgrapes PRIVATE redGrapes)
 target_link_libraries(redgrapes PRIVATE Threads::Threads)
-target_compile_options(redgrapes PRIVATE "-DSPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_OFF -O3 -DNDEBUG")
+target_compile_options(redgrapes PRIVATE "-DNDEBUG")
 
 add_executable(superglue src/superglue.cpp)
 target_include_directories(superglue PRIVATE "${CMAKE_CURRENT_LIST_DIR}/../thirdparty/superglue/include")
