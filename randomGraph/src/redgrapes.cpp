@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
     auto ts = StartTracing();
 #endif
 
-    std::vector<redGrapes::IOResource<std::array<uint64_t, 8>,TTask>> resources( n_resources );
+    std::vector<redGrapes::IOResource<std::array<uint64_t, 8>>> resources( n_resources );
 
     if( block_execution )
     {
@@ -190,7 +190,7 @@ int main(int argc, char* argv[])
     auto end = steady_clock::now();
 
     for(int i = 0; i < n_resources; ++i)
-        if(*resources[i] != expected_hash[i])
+        if(*resources[i].read() != expected_hash[i])
         {
             std::cout << "error: invalid result!" << std::endl;
             return -1;
