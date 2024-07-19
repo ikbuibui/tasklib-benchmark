@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
     auto rg = redGrapes::init(n_workers);
     using TTask = decltype(rg)::RGTask;
     // initialize tiled matrix in column-major layout
-    std::vector<redGrapes::IOResource<double*,TTask>> A(nblks * nblks);
+    std::vector<redGrapes::IOResource<double*>> A(nblks * nblks);
 
     // allocate each tile (also in column-major layout)
     for(size_t j = 0; j < nblks; ++j)
@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
         for(size_t ib = 0; ib < blksz; ++ib)
             for(size_t ja = 0; ja < nblks; ++ja)
                 for(size_t jb = 0; jb < blksz; ++jb)
-                    (*A[ja * nblks + ia])[jb * blksz + ib] = Alin[(ia * blksz + ib) + (ja * blksz + jb) * N];
+                    (*A[ja * nblks + ia].write())[jb * blksz + ib] = Alin[(ia * blksz + ib) + (ja * blksz + jb) * N];
 
     auto start = high_resolution_clock::now();
 
