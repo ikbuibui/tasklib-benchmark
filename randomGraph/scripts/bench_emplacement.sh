@@ -18,7 +18,7 @@ run()
 {
     mkdir -p data/emplacement
 
-    for lib in quark redgrapes superglue;
+    for lib in rgExec superglue;
     do
 	truncate -s 0 data/emplacement/${lib}-$(hostname)
 	for n_deps in 0 1 2 3 4 5;

@@ -16,7 +16,7 @@ make -j
 cd ..
 
 sleep 5
-RG="$(./build/redgrapes $n_tasks $n_resources $min_dependencies $max_dependencies $min_task_duration $max_task_duration $n_workers $blocked)"
+RG="$(./build/rgExec $n_tasks $n_resources $min_dependencies $max_dependencies $min_task_duration $max_task_duration $n_workers $blocked)"
 
 sleep 5
 QK="$(./build/quark $n_tasks $n_resources $min_dependencies $max_dependencies $min_task_duration $max_task_duration $n_workers $blocked)"

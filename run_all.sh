@@ -12,11 +12,11 @@ update_image() {
     sed -i "s~\[$1\]([^\)]*)~[$1]($2)~g" ${README}
 }
 
-pushd latency
-. ./make_plot.sh
-echo "OUTPUT=${OUTPUT}"
-update_image "Latency" "latency/${OUTPUT}"
-popd
+# pushd latency
+# . ./make_plot.sh
+# echo "OUTPUT=${OUTPUT}"
+# update_image "Latency" "latency/${OUTPUT}"
+# popd
 
 pushd randomGraph
 . ./scripts/bench_emplacement.sh
@@ -61,13 +61,13 @@ update_image "Scheduling Gap: 25-500μs" "randomGraph/$OUTPUT"
 popd
 
 
-pushd cholesky
+# pushd cholesky
 
-matrix_size=4096 . ./make_plot.sh
-update_image "Cholesky 128MiB" "cholesky/${OUTPUT}"
+# matrix_size=4096 . ./make_plot.sh
+# update_image "Cholesky 128MiB" "cholesky/${OUTPUT}"
 
-matrix_size=8192 . ./make_plot.sh
-update_image "Cholesky 512MiB" "cholesky/${OUTPUT}"
+# matrix_size=8192 . ./make_plot.sh
+# update_image "Cholesky 512MiB" "cholesky/${OUTPUT}"
 
-popd
+# popd
 
