@@ -7,3 +7,6 @@
 [submodule "thirdparty/redGrapes"]
 	path = thirdparty/redGrapes
 	url = https://github.com/ikbuibui/redGrapes.git
+[submodule "thirdparty/rg"]
+	path = thirdparty/rg
+	url = https://github.com/ikbuibui/rg
