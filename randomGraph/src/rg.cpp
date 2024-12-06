@@ -26,23 +26,25 @@ auto randomGraph(rg::ThreadPool *ptr) -> rg::InitTask<int> {
   if (block_execution) {
     std::atomic_int count(0);
 
-    for (unsigned i = 0; i < n_workers; ++i) {
-      co_await rg::dispatch_task(
-          [](auto i, auto &count, auto blockRes) -> rg::Task<int> {
+    co_await rg::dispatch_task(
+        [](auto &count, auto blockRes) -> rg::Task<int> {
+          for (unsigned i = 0; i < n_workers; ++i) {
+
             wait_task_begin[i] = steady_clock::now();
             wait_task_thread[i] = std::this_thread::get_id();
 
             count.fetch_add(1);
+          }
 
-            // block this worker until start flag
-            while (!start_flag)
-              ;
-
+          // block this worker until start flag
+          while (!start_flag)
+            ;
+          for (unsigned i = 0; i < n_workers; ++i) {
             wait_task_end[i] = steady_clock::now();
-            co_return 0;
-          },
-          i, count, blockOnRes.rg_write());
-    }
+          }
+          co_return 0;
+        },
+        count, blockOnRes.rg_write());
 
     // wait until all block-tasks are up and running
     int last_count = count;
