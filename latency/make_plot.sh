@@ -10,7 +10,7 @@ truncate -s 0 data
 
 i=0
 
-for lib in redgrapes superglue quark;
+for lib in rgExec superglue quark;
 do
     OUTPUT=$(./build/$lib)
     echo "$lib $(echo $OUTPUT | grep -Po 'latency = \K[0-9.]*')" >> data
@@ -19,7 +19,7 @@ do
 done
 
 
-pushd ../thirdparty/redGrapes/
+pushd ../thirdparty/rg/
 redGrapes_commit=$(git rev-parse --short HEAD)
 popd
 

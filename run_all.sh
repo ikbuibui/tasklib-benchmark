@@ -12,11 +12,11 @@ update_image() {
     sed -i "s~\[$1\]([^\)]*)~[$1]($2)~g" ${README}
 }
 
-# pushd latency
-# . ./make_plot.sh
-# echo "OUTPUT=${OUTPUT}"
-# update_image "Latency" "latency/${OUTPUT}"
-# popd
+pushd latency
+. ./make_plot.sh
+echo "OUTPUT=${OUTPUT}"
+update_image "Latency" "latency/${OUTPUT}"
+popd
 
 pushd randomGraph
 . ./scripts/bench_emplacement.sh
