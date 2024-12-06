@@ -21,7 +21,7 @@ build()
 run()
 {
     mkdir -p data/overhead
-    for lib in quark rgExec superglue;
+    for lib in rgExec superglue;
     do
 	truncate -s 0 data/overhead/${lib}
 	for n_tasks in 1024 2048 4096 8192 16384;
