@@ -21,8 +21,6 @@ auto randomGraph(rg::ThreadPool *ptr) -> rg::InitTask<int> {
     res = rg::Resource(std::make_shared<std::array<uint64_t, 8>>());
   }
 
-  auto blockOnRes = rg::Resource(1);
-
   if (block_execution) {
     std::atomic_int count(0);
     if (n_workers != n_resources) {
@@ -112,8 +110,7 @@ auto randomGraph(rg::ThreadPool *ptr) -> rg::InitTask<int> {
 
     case 3:
       co_await rg::dispatch_task(
-          [](auto ra1, auto ra2, auto ra3, auto i,
-             auto blockRes) -> rg::Task<int> {
+          [](auto ra1, auto ra2, auto ra3, auto i) -> rg::Task<int> {
             task_begin[i] = steady_clock::now();
 
             sleep(task_duration[i]);
@@ -128,7 +125,7 @@ auto randomGraph(rg::ThreadPool *ptr) -> rg::InitTask<int> {
           },
           resources[access_pattern[i][0]].rg_write(),
           resources[access_pattern[i][1]].rg_write(),
-          resources[access_pattern[i][2]].rg_write(), i, blockOnRes.rg_read());
+          resources[access_pattern[i][2]].rg_write(), i);
       break;
 
     case 4:
