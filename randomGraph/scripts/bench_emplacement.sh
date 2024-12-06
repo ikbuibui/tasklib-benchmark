@@ -18,7 +18,7 @@ run()
 {
     mkdir -p data/emplacement
 
-    for lib in rgExec superglue;
+    for lib in quark rgExec superglue;
     do
 	truncate -s 0 data/emplacement/${lib}-$(hostname)
 	for n_deps in 0 1 2 3 4 5;
@@ -56,7 +56,7 @@ run()
 
 plot()
 {
-    pushd ../thirdparty/redGrapes/
+    pushd ../thirdparty/rg/
     redGrapes_commit=$(git rev-parse --short HEAD)
     popd
 
@@ -70,7 +70,7 @@ plot()
 
     . ../plot.sh <<< "data/emplacement/quark-$(hostname) Quark #86C4FF #006DD5
 data/emplacement/superglue-$(hostname) SuperGlue #88F176 #20D500
-data/emplacement/redgrapes-$(hostname) RedGrapes #C976F1 #670496"
+data/emplacement/rgExec-$(hostname) RedGrapes #C976F1 #670496"
 }
 
 build

@@ -21,7 +21,7 @@ build()
 run()
 {
     mkdir -p data/overhead
-    for lib in rgExec superglue;
+    for lib in quark rgExec superglue;
     do
 	truncate -s 0 data/overhead/${lib}
 	for n_tasks in 1024 2048 4096 8192 16384;
@@ -63,7 +63,7 @@ run()
 
 plot()
 {
-    pushd ../thirdparty/redGrapes/
+    pushd ../thirdparty/rg/
     redGrapes_commit=$(git rev-parse --short HEAD)
     popd
 
@@ -77,7 +77,7 @@ plot()
 
     . ../plot.sh <<< "data/overhead/quark Quark #86C4FF #006DD5
 data/overhead/superglue SuperGlue #88F176 #20D500
-data/overhead/redgrapes RedGrapes #C976F1 #670496"
+data/overhead/rgExec RedGrapes #C976F1 #670496"
 }
 
 build

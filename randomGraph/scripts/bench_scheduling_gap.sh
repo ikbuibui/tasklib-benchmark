@@ -23,7 +23,7 @@ run()
     ## Quark freezses in this benchmark at 4096 tasks and up,
     ## therefore not included here
 
-    for lib in rgExec superglue;
+    for lib in quark rgExec superglue;
     do
 	truncate -s 0 data/schedulingGap/${lib}
 	for n_tasks in 1024 2048 4096 8192
@@ -59,7 +59,7 @@ run()
 
 plot()
 {
-    pushd ../thirdparty/redGrapes/
+    pushd ../thirdparty/rg/
     redGrapes_commit=$(git rev-parse --short HEAD)
     popd
 
@@ -73,7 +73,7 @@ plot()
 
     . ../plot.sh <<< "data/schedulingGap/quark Quark #86C4FF #006DD5
 data/schedulingGap/superglue SuperGlue #88F176 #20D500
-data/schedulingGap/redgrapes RedGrapes #C976F1 #670496"
+data/schedulingGap/rgExec RedGrapes #C976F1 #670496"
 }
 
 build
