@@ -79,7 +79,6 @@ auto randomGraph(rg::ThreadPool *ptr) -> rg::InitTask<int> {
           [](auto ra1, auto i) -> rg::Task<void> {
             task_begin[i] = steady_clock::now();
 
-            // spdlog::info("task {}, res {}", i, access_pattern[i][0]);
             sleep(task_duration[i]);
             task_thread[i] = std::this_thread::get_id();
             hash(i, *ra1);
@@ -179,7 +178,6 @@ auto randomGraph(rg::ThreadPool *ptr) -> rg::InitTask<int> {
   auto mid = steady_clock::now();
 
   if (block_execution) {
-    // spdlog::info("+++ emplacement done, start executing tasks...");
     // trigger execution of tasks
     start_flag = true;
   }
@@ -218,8 +216,6 @@ auto randomGraph(rg::ThreadPool *ptr) -> rg::InitTask<int> {
 }
 
 int main(int argc, char *argv[]) {
-  // spdlog::set_level(spdlog::level::trace);
-  // spdlog::set_pattern("[thread %t] %^[%l]%$ %v");
 
   read_args(argc, argv);
   generate_access_pattern();
