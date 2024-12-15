@@ -67,7 +67,7 @@ auto randomGraph(rg::ThreadPool *ptr) -> rg::InitTask<int> {
     }
     // wait until all block-tasks are up and running
     int last_count = count;
-    while (count < n_workers) {
+    while (count < n_workers - 1) {
 
       if (last_count != count)
         std::cout << count << std::endl;
