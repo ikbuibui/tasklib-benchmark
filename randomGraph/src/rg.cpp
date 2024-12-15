@@ -32,21 +32,24 @@ auto randomGraph(rg::ThreadPool *ptr) -> rg::InitTask<int> {
     // res[n_res -1], other workers block one res each. This way all res are
     // blocked and one thread keeps parsing
     co_await rg::dispatch_task(
-        [](auto i, auto &count, auto blockResFirst,
+        [](auto &count, auto blockResFirst,
            auto blockResLast) -> rg::Task<void> {
-          wait_task_begin[i] = steady_clock::now();
-          wait_task_thread[i] = std::this_thread::get_id();
+          wait_task_begin[0] = steady_clock::now();
+          wait_task_thread[0] = std::this_thread::get_id();
+          wait_task_begin[n_resources - 1] = steady_clock::now();
+          wait_task_thread[n_resources - 1] = std::this_thread::get_id();
 
           count.fetch_add(1);
 
           // block this worker until start flag
           while (!start_flag)
             ;
-          wait_task_end[i] = steady_clock::now();
+          wait_task_end[0] = steady_clock::now();
+          wait_task_end[n_resources - 1] = steady_clock::now();
+
           co_return;
         },
-        0, count, resources[0].rg_write(),
-        resources[n_resources - 1].rg_write());
+        count, resources[0].rg_write(), resources[n_resources - 1].rg_write());
 
     for (unsigned i = 1; i < n_resources - 1; ++i) {
 
