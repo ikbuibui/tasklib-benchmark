@@ -43,7 +43,6 @@ int main(int argc, char *argv[]) {
 
   auto poolObj = rg::init(n_threads);
   auto a = latencyTest(poolObj.pool_ptr());
-  a.finalize();
 
   return 0;
 }

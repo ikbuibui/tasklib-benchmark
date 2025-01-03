@@ -245,7 +245,5 @@ int main(int argc, char *argv[]) {
 
   auto poolObj = rg::init(n_workers);
   auto a = randomGraph(poolObj.pool_ptr());
-  a.finalize();
-
   return 0;
 }
