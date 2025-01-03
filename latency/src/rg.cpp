@@ -14,7 +14,8 @@ auto latencyTest(rg::ThreadPool *ptr) -> rg::InitTask<int> {
   /* warmup */
   {
     for (unsigned i = 0; i < 64; ++i) {
-      co_await rg::dispatch_task([]() -> rg::Task<int> { co_return 0; });
+      co_await rg::dispatch_task<false, true>(
+          []() -> rg::Task<void> { co_return; });
     }
     co_await rg::BarrierAwaiter{};
   }
@@ -24,9 +25,10 @@ auto latencyTest(rg::ThreadPool *ptr) -> rg::InitTask<int> {
 
   for (unsigned i = 0; i < n_tasks; ++i) {
     auto start = high_resolution_clock::now();
-    auto stop = co_await rg::dispatch_task([]() -> rg::Task<decltype(start)> {
-      co_return high_resolution_clock::now();
-    });
+    auto stop = co_await rg::dispatch_task<false, true>(
+        []() -> rg::Task<decltype(start)> {
+          co_return high_resolution_clock::now();
+        });
 
     avg_latency += duration_cast<nanoseconds>(co_await stop.get() - start);
   }
