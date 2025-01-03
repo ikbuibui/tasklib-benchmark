@@ -25,12 +25,12 @@ auto latencyTest(rg::ThreadPool *ptr) -> rg::InitTask<int> {
 
   for (unsigned i = 0; i < n_tasks; ++i) {
     auto start = high_resolution_clock::now();
-    auto stop = co_await rg::dispatch_task<false, true>(
+    auto stop = co_await rg::dispatch_task<true, true>(
         []() -> rg::Task<decltype(start)> {
           co_return high_resolution_clock::now();
         });
 
-    avg_latency += duration_cast<nanoseconds>(co_await stop.get() - start);
+    avg_latency += duration_cast<nanoseconds>(stop - start);
   }
 
   avg_latency /= n_tasks;
