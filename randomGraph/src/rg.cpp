@@ -84,7 +84,7 @@ auto randomGraph(rg::ThreadPool *ptr) -> rg::InitTask<int> {
   for (int i = 0; i < n_tasks; ++i) {
     switch (access_pattern[i].size()) {
     case 0:
-      co_await rg::dispatch_task(
+      co_await rg::dispatch_task<false, false>(
           [](auto i) -> rg::Task<void> {
             task_begin[i] = steady_clock::now();
 
@@ -98,8 +98,10 @@ auto randomGraph(rg::ThreadPool *ptr) -> rg::InitTask<int> {
       break;
 
     case 1:
-      co_await rg::dispatch_task(
+      co_await rg::dispatch_task<false, true>(
           [](auto ra1, auto i) -> rg::Task<void> {
+            std::cout << "task " << i << "created" << std::endl;
+
             task_begin[i] = steady_clock::now();
 
             sleep(task_duration[i]);
@@ -107,6 +109,8 @@ auto randomGraph(rg::ThreadPool *ptr) -> rg::InitTask<int> {
             hash(i, *ra1);
 
             task_end[i] = steady_clock::now();
+            std::cout << "task " << i << "done" << std::endl;
+
             co_return;
           },
           resources[access_pattern[i][0]].rg_write(), i);
@@ -114,7 +118,7 @@ auto randomGraph(rg::ThreadPool *ptr) -> rg::InitTask<int> {
       break;
 
     case 2:
-      co_await rg::dispatch_task(
+      co_await rg::dispatch_task<false, true>(
           [](auto ra1, auto ra2, auto i) -> rg::Task<void> {
             task_begin[i] = steady_clock::now();
 
@@ -131,7 +135,7 @@ auto randomGraph(rg::ThreadPool *ptr) -> rg::InitTask<int> {
       break;
 
     case 3:
-      co_await rg::dispatch_task(
+      co_await rg::dispatch_task<false, true>(
           [](auto ra1, auto ra2, auto ra3, auto i) -> rg::Task<void> {
             task_begin[i] = steady_clock::now();
 
@@ -151,7 +155,7 @@ auto randomGraph(rg::ThreadPool *ptr) -> rg::InitTask<int> {
       break;
 
     case 4:
-      co_await rg::dispatch_task(
+      co_await rg::dispatch_task<false, true>(
           [](auto ra1, auto ra2, auto ra3, auto ra4, auto i) -> rg::Task<void> {
             task_begin[i] = steady_clock::now();
 
@@ -173,7 +177,7 @@ auto randomGraph(rg::ThreadPool *ptr) -> rg::InitTask<int> {
       break;
 
     case 5:
-      co_await rg::dispatch_task(
+      co_await rg::dispatch_task<false, true>(
           [](auto ra1, auto ra2, auto ra3, auto ra4, auto ra5,
              auto i) -> rg::Task<void> {
             task_begin[i] = steady_clock::now();
@@ -206,7 +210,7 @@ auto randomGraph(rg::ThreadPool *ptr) -> rg::InitTask<int> {
   }
 
   // wait for execution to finish
-  co_await rg::BarrierAwaiter{};
+  co_await rg::BarrierAwaiter{resources};
 
   auto end = steady_clock::now();
 
