@@ -38,8 +38,10 @@ run()
 
 		grep -s 'success' <<< $OUTPUT >/dev/null || exit
 		GAP=$(grep -Po 'scheduling gap \K[.0-9]*' <<< $OUTPUT)
+		EXECUTION=$(grep -Po 'execution \K[.0-9]*' <<< $OUTPUT)
 
 		echo "gap = " $GAP
+		echo "exec = " $EXECUTION
 
 		DATA="$GAP $DATA"
 	    done
