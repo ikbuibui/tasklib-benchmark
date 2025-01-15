@@ -13,7 +13,7 @@ std::mutex m;
 std::condition_variable cv;
 std::atomic<bool> start_flag{false};
 
-auto randomGraph(rg::ThreadPool *ptr) -> rg::InitTask<int> {
+auto randomGraph([[maybe_unused]] rg::ThreadPool *ptr) -> rg::InitTask<int> {
   std::vector<rg::Resource<std::shared_ptr<std::array<uint64_t, 8>>>> resources(
       n_resources);
 
@@ -32,8 +32,8 @@ auto randomGraph(rg::ThreadPool *ptr) -> rg::InitTask<int> {
     // res[n_res -1], other workers block one res each. This way all res are
     // blocked and one thread keeps parsing
     co_await rg::dispatch_task(
-        [](auto &count, auto blockResFirst,
-           auto blockResLast) -> rg::Task<void> {
+        [](auto &count, [[maybe_unused]] auto blockResFirst,
+           [[maybe_unused]] auto blockResLast) -> rg::Task<void> {
           wait_task_begin[0] = steady_clock::now();
           wait_task_thread[0] = std::this_thread::get_id();
           wait_task_begin[n_resources - 1] = steady_clock::now();
@@ -54,7 +54,8 @@ auto randomGraph(rg::ThreadPool *ptr) -> rg::InitTask<int> {
     for (unsigned i = 1; i < n_resources - 1; ++i) {
 
       co_await rg::dispatch_task(
-          [](auto i, auto &count, auto blockRes) -> rg::Task<void> {
+          [](auto i, auto &count,
+             [[maybe_unused]] auto blockRes) -> rg::Task<void> {
             wait_task_begin[i] = steady_clock::now();
             wait_task_thread[i] = std::this_thread::get_id();
 
