@@ -16,7 +16,7 @@ build()
 run()
 {
     mkdir -p data
-    for lib in redgrapes superglue quark;
+    for lib in rgExec superglue;
     do
 	truncate -s 0 data/${lib}
 	for nblks in 4 8 16 32 64;
@@ -49,7 +49,7 @@ run()
 
 plot()
 {
-    pushd ../thirdparty/redGrapes/
+    pushd ../thirdparty/rg/
     redGrapes_commit=$(git rev-parse --short HEAD)
     popd
 
@@ -60,9 +60,9 @@ plot()
     LABEL_X="tiling factor (#tiles^{0.5})"
     LABEL_Y="runtime (ms)"
 
-    . ../plot.sh <<< "data/quark Quark #86C4FF #006DD5
+    . ../plot.sh <<< "
 data/superglue SuperGlue #88F176 #20D500
-data/redgrapes RedGrapes #C976F1 #670496"
+data/redgrapes RG #C976F1 #670496"
 }
 
 build
