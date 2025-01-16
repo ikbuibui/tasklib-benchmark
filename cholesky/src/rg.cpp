@@ -41,6 +41,7 @@ auto cholesky([[maybe_unused]] rg::ThreadPool *ptr) -> rg::InitTask<int> {
             [](auto a, auto b, auto c) -> rg::Task<void> {
               cblas_dgemm(CblasColMajor, CblasNoTrans, CblasTrans, blksz, blksz,
                           blksz, -1.0, *a, blksz, *b, blksz, 1.0, *c, blksz);
+              co_return;
             },
             A[k * nblks + i].rg_read(), A[k * nblks + j].rg_read(),
             A[j * nblks + i].rg_write());
@@ -53,6 +54,7 @@ auto cholesky([[maybe_unused]] rg::ThreadPool *ptr) -> rg::InitTask<int> {
           [](auto a, auto c) -> rg::Task<void> {
             cblas_dsyrk(CblasColMajor, CblasLower, CblasNoTrans, blksz, blksz,
                         -1.0, *a, blksz, 1.0, *c, blksz);
+            co_return;
           },
           A[i * nblks + j].rg_read(), A[j * nblks + j].rg_write());
     }
@@ -61,6 +63,7 @@ auto cholesky([[maybe_unused]] rg::ThreadPool *ptr) -> rg::InitTask<int> {
     co_await rg::dispatch_task(
         [j](auto a) -> rg::Task<void> {
           LAPACKE_dpotrf(LAPACK_COL_MAJOR, 'L', blksz, *a, blksz);
+          co_return;
         },
         A[j * nblks + j].rg_write());
 
@@ -70,9 +73,11 @@ auto cholesky([[maybe_unused]] rg::ThreadPool *ptr) -> rg::InitTask<int> {
           [](auto a, auto b) -> rg::Task<void> {
             cblas_dtrsm(CblasColMajor, CblasRight, CblasLower, CblasTrans,
                         CblasNonUnit, blksz, blksz, 1.0, *a, blksz, *b, blksz);
+            co_return;
           },
           A[j * nblks + j].rg_read(), A[j * nblks + i].rg_write());
     }
+    co_return 1;
   }
 
   auto end = high_resolution_clock::now();
