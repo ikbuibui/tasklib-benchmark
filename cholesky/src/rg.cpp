@@ -77,7 +77,6 @@ auto cholesky([[maybe_unused]] rg::ThreadPool *ptr) -> rg::InitTask<int> {
           },
           A[j * nblks + j].rg_read(), A[j * nblks + i].rg_write());
     }
-    co_return 1;
   }
 
   auto end = high_resolution_clock::now();
@@ -86,6 +85,7 @@ auto cholesky([[maybe_unused]] rg::ThreadPool *ptr) -> rg::InitTask<int> {
   std::cout << "total "
             << duration_cast<nanoseconds>(end - start).count() / 1000000.0
             << " ms" << std::endl;
+  co_return 1;
 }
 
 int main(int argc, char *argv[]) {
