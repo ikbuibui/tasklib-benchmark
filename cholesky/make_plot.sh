@@ -59,9 +59,11 @@ plot()
     TITLE="cholesky factorization\\\n $matrix_size x $matrix_size matrix of 64-bit float\\\n $n_workers workers \\\nhost: $(hostname)\\\nredGrapes: \#${redGrapes_commit}"
     LABEL_X="tiling factor (#tiles^{0.5})"
     LABEL_Y="runtime (ms)"
+	LOGX=1
 
-    . ../plot.sh <<< "data/superglue SuperGlue #88F176 #20D500
-data/rgExec RG #C976F1 #670496"
+    . ../plot.sh <<< "data/quark Quark #86C4FF #006DD5
+data/superglue SuperGlue #88F176 #20D500
+data/rgExec RedGrapes #C976F1 #670496"
 }
 
 build
