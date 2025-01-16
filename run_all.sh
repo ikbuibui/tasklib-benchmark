@@ -1,6 +1,6 @@
 #!/bin/sh
 
-worker_counts=(1 2 4 8 16 32 64) # Worker counts
+worker_counts=(8 16 32 64) # Worker counts
 export n_resources=64  # Assuming n_resources stays constant
 export n_repeat=15
 

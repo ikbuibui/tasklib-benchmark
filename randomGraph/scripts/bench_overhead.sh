@@ -41,10 +41,12 @@ run()
 		EMPLACE=$(grep -Po 'emplacement \K[.0-9]*' <<< $OUTPUT)
 		GAP=$(grep -Po 'scheduling gap \K[.0-9]*' <<< $OUTPUT)
 		DIFF=$(bc -l <<< "($TOTAL - $IDEAL) / $n_tasks")
+		EXECUTION=$(grep -Po 'execution \K[.0-9]*' <<< $OUTPUT)
 
 		echo "gap = " $GAP
 		echo "emp = " $EMPLACE
-		
+		echo "exec = " $EXECUTION
+
 		DATA="$DIFF $DATA"
 	    done
 	    

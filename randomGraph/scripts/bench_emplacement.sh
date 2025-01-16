@@ -63,7 +63,7 @@ plot()
     TARGET_DIR="plots/${redGrapes_commit}/$(hostname)"
     mkdir -p ${TARGET_DIR}
     
-    OUTPUT="${TARGET_DIR}/emplacement.png"
+    OUTPUT="${TARGET_DIR}/emplacement_thr${n_workers}.png"
     TITLE="emplacement time,\\\n Host: $(hostname)\\\nredGrapes: #${redGrapes_commit}"
     LABEL_X="#dependencies"
     LABEL_Y="emplacement overhead per task (μs)"
