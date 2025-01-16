@@ -37,7 +37,7 @@ auto cholesky([[maybe_unused]] rg::ThreadPool *ptr) -> rg::InitTask<int> {
     for (size_t k = 0; k < j; k++) {
       for (size_t i = j + 1; i < nblks; i++) {
         // A[i,j] = A[i,j] - A[i,k] * (A[j,k])^t
-        co_await rg::dispatch_task(
+        co_await rg::dispatch_task<false, true>(
             [](auto a, auto b, auto c) -> rg::Task<void> {
               cblas_dgemm(CblasColMajor, CblasNoTrans, CblasTrans, blksz, blksz,
                           blksz, -1.0, *a, blksz, *b, blksz, 1.0, *c, blksz);
@@ -50,7 +50,7 @@ auto cholesky([[maybe_unused]] rg::ThreadPool *ptr) -> rg::InitTask<int> {
 
     for (size_t i = 0; i < j; i++) {
       // A[j,j] = A[j,j] - A[j,i] * (A[j,i])^t
-      co_await rg::dispatch_task(
+      co_await rg::dispatch_task<false, true>(
           [](auto a, auto c) -> rg::Task<void> {
             cblas_dsyrk(CblasColMajor, CblasLower, CblasNoTrans, blksz, blksz,
                         -1.0, *a, blksz, 1.0, *c, blksz);
@@ -60,7 +60,7 @@ auto cholesky([[maybe_unused]] rg::ThreadPool *ptr) -> rg::InitTask<int> {
     }
 
     // Cholesky Factorization of A[j,j]
-    co_await rg::dispatch_task(
+    co_await rg::dispatch_task<false, true>(
         [j](auto a) -> rg::Task<void> {
           LAPACKE_dpotrf(LAPACK_COL_MAJOR, 'L', blksz, *a, blksz);
           co_return;
@@ -69,7 +69,7 @@ auto cholesky([[maybe_unused]] rg::ThreadPool *ptr) -> rg::InitTask<int> {
 
     for (size_t i = j + 1; i < nblks; i++) {
       // A[i,j] <- A[i,j] = X * (A[j,j])^t
-      co_await rg::dispatch_task(
+      co_await rg::dispatch_task<false, true>(
           [](auto a, auto b) -> rg::Task<void> {
             cblas_dtrsm(CblasColMajor, CblasRight, CblasLower, CblasTrans,
                         CblasNonUnit, blksz, blksz, 1.0, *a, blksz, *b, blksz);
@@ -79,7 +79,7 @@ auto cholesky([[maybe_unused]] rg::ThreadPool *ptr) -> rg::InitTask<int> {
     }
   }
   // wait for execution to finish
-  co_await rg::BarrierAwaiter{};
+  co_await rg::BarrierAwaiter{A};
 
   auto end = high_resolution_clock::now();
 
