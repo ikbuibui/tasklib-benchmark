@@ -15,7 +15,8 @@ auto cholesky([[maybe_unused]] rg::ThreadPool *ptr) -> rg::InitTask<int> {
   // allocate each tile (also in column-major layout)
   for (size_t j = 0; j < nblks; ++j)
     for (size_t i = 0; i < nblks; ++i)
-      A[j * nblks + i] = std::make_shared<double *>(new double[blksz * blksz]);
+      A[j * nblks + i] =
+          rg::Resource(std::make_shared<double *>(new double[blksz * blksz]));
 
   /* ia: row of outer matrix
      ib: row of inner matrix
