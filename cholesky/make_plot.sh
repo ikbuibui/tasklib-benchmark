@@ -1,6 +1,6 @@
 #!/bin/sh
 
-n_repeat=${5}
+n_repeat=5
 n_workers=${n_workers-64}
 matrix_size=${matrix_size-8192}
 
