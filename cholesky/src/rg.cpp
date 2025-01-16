@@ -78,6 +78,8 @@ auto cholesky([[maybe_unused]] rg::ThreadPool *ptr) -> rg::InitTask<int> {
           A[j * nblks + j].rg_read(), A[j * nblks + i].rg_write());
     }
   }
+  // wait for execution to finish
+  co_await rg::BarrierAwaiter{};
 
   auto end = high_resolution_clock::now();
 
