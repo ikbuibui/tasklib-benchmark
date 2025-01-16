@@ -60,8 +60,7 @@ plot()
     LABEL_X="tiling factor (#tiles^{0.5})"
     LABEL_Y="runtime (ms)"
 
-    . ../plot.sh <<< "
-data/superglue SuperGlue #88F176 #20D500
+    . ../plot.sh <<< "data/superglue SuperGlue #88F176 #20D500
 data/redgrapes RG #C976F1 #670496"
 }
 
