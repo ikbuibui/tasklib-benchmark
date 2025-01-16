@@ -1,6 +1,6 @@
 #!/bin/sh
 
-n_repeat=${n_repeat-5}
+n_repeat=${5}
 n_workers=${n_workers-64}
 matrix_size=${matrix_size-8192}
 
@@ -61,7 +61,7 @@ plot()
     LABEL_Y="runtime (ms)"
 
     . ../plot.sh <<< "data/superglue SuperGlue #88F176 #20D500
-data/redgrapes RG #C976F1 #670496"
+data/rgExec RG #C976F1 #670496"
 }
 
 build
