@@ -11,8 +11,8 @@ find_package(LAPACK REQUIRED)
 add_executable(rgExec src/rg.cpp)
 add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../thirdparty/rg
                  ${CMAKE_BINARY_DIR}/rg)
-target_link_libraries(rgExec PRIVATE rg)
-target_compile_options(rgExec PRIVATE "-fcoroutines")
+target_link_libraries(rgExec PRIVATE rg ${LAPACK_LIBRARIES})
+target_compile_options(rgExec PRIVATE "-fcoroutines" ${LAPACK_LINKER_FLAGS})
 
 
 ## SuperGlue doesn't like -DNDEBUG.
