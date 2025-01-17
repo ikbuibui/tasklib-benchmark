@@ -1,6 +1,7 @@
 #!/bin/sh
 
-worker_counts=(32 64)
+# worker_counts=(32 64)
+worker_counts=(64)
 export n_resources=64
 export n_repeat=15
 
@@ -58,17 +59,14 @@ for n_workers in "${worker_counts[@]}"; do
     export max_task_duration=500
     . ./scripts/bench_scheduling_gap.sh
     update_image "Scheduling Gap: 25-500μs (Workers: ${n_workers})" "randomGraph/$OUTPUT"
-
-    # popd
+    popd
 
     pushd cholesky
-
     matrix_size=4096 . ./make_plot.sh
     update_image "Cholesky 128MiB (Workers: ${n_workers})" "cholesky/${OUTPUT}"
 
     matrix_size=8192 . ./make_plot.sh
     update_image "Cholesky 512MiB (Workers: ${n_workers})" "cholesky/${OUTPUT}"
-
     popd
 
 done
